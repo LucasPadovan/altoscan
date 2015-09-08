@@ -53,20 +53,26 @@ namespace TransmisionDatos
             }
         }
 
+        public void OpenPort()
+        {
+            if (!port.IsOpen)
+            {
+                port.Open();
+            }
+        }
+
         public void Write(byte[] request, int offset, int count)
         {
-            port.Open();
-            port.Write(request, offset, count);
-            port.Close();
+            port.Write(request, offset, count); 
         }
 
         public string[] ReadPort()
         {
-
             var response = new string[3];
-            response[0] = hexaString;
-            response[1] = decimalString;
-            response[2] = binaryString;
+
+            response[0]  = hexaString;
+            response[1]  = decimalString;
+            response[2]  = binaryString;
 
             return response;
         }
@@ -106,6 +112,8 @@ namespace TransmisionDatos
             Console.WriteLine("Response in hexa: "    + hexaString   );
             Console.WriteLine("Response in decimal: " + decimalString);
             Console.WriteLine("Response in binary: "  + binaryString );
+
+            port.Close();
         }
     }
 }

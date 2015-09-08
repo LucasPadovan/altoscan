@@ -29,10 +29,13 @@ namespace WindowsFormsApplication1
         string InputData = String.Empty;
 
         Thread ConfigScan;
+        Thread WriterThread;
 
         Boolean terminate = false;
 
         byte[] request = new byte[8];
+
+        PortManager portManager;
 
         public Form1()
         {
@@ -53,7 +56,7 @@ namespace WindowsFormsApplication1
             {
                 cboPorts.Items.Add(portName);
             }
-            cboPorts.Text = ArrayComPortsNames[0];
+            cboPorts.Text = ArrayComPortsNames[1];
 
             //Baud Rate
             ArrayList baudRates = new ArrayList() {300, 600, 1200, 2400, 9600, 14400, 19200, 38400, 57600, 115200};
@@ -70,7 +73,7 @@ namespace WindowsFormsApplication1
             cboDataBits.Items.Add(7);
             cboDataBits.Items.Add(8);
             //get the first item print it in the text 
-            cboDataBits.Text = cboDataBits.Items[0].ToString();
+            cboDataBits.Text = cboDataBits.Items[1].ToString();
 
             //Stop Bits
             cboStopBits.Items.Add("None");
@@ -78,7 +81,7 @@ namespace WindowsFormsApplication1
             cboStopBits.Items.Add("OnePointFive");
             cboStopBits.Items.Add("Two");
             //get the first item print in the text
-            cboStopBits.Text = cboStopBits.Items[0].ToString();
+            cboStopBits.Text = cboStopBits.Items[1].ToString();
 
             //Parity 
             cboParity.Items.Add("None");
@@ -87,7 +90,7 @@ namespace WindowsFormsApplication1
             cboParity.Items.Add("Odd");
             cboParity.Items.Add("Space");
             //get the first item print in the text
-            cboParity.Text = cboParity.Items[0].ToString();
+            cboParity.Text = cboParity.Items[1].ToString();
 
             //Handshake
             cboHandShaking.Items.Add("None");
@@ -270,15 +273,23 @@ namespace WindowsFormsApplication1
 
 
         // Start of button function binding
+        // Cosas a implementar:
+        //  un buffer interno (array de strings) para guardar todo lo que haya que escribir, uno por cada output, para las consultas sucesivas.
+        //  dividir el metodo de escribir en los outputs del de leer y guardar en el buffer interno lo leido del port manager.
+        //  consultas sucesivas: cuando se pidan mas de 120 valores, o se quieran escribir mas de esos, se dividira usando modulo y el resto: 130 mod 120 = 10, 130/120 = 1, se deberan hacer dos consultas, donde la primera sea de 120 valores desde el 0, y la segunda sea de 10 valores desde el 120. El buffer interno a crear sera un array de dos arrays de 3 strings cada uno, correspondiente a cada salida.
+        //  timeout: si se da timeout de 2 segundos, que el sleep del thread de leer del buffer del portManager sea de 100ms y lo ejecute 20 veces al guardar el tiempo de inicializacion en una variable y compararlo con el itempo actual de ejecucion. Si no se obtiene nada pasado ese tiempo, aumentar uno a las repeticiones y comparar con lo obtenido del campo ingresado.
+
 
         private void startQuery_Click(object sender, EventArgs e)
         {
             //String portName, int baudRate, Parity parity, int dataBits, StopBits stopBits
             string portName = cboPorts.Text;
-            int baudRate = int.Parse(cboBaudRate.Text);
-            
-            
             string parityName = cboParity.Text;
+            string stopBitsName = cboStopBits.Text;
+
+            int baudRate = int.Parse(cboBaudRate.Text);
+            int dataBits = int.Parse(cboDataBits.Text);
+
             Parity parity = Parity.None;
             switch (parityName)
             {
@@ -299,8 +310,6 @@ namespace WindowsFormsApplication1
                     break;
             }
 
-            int dataBits = int.Parse(cboDataBits.Text);
-            string stopBitsName = cboStopBits.Text;
             StopBits stopBits = StopBits.None;
             switch (stopBitsName)
             {
@@ -319,12 +328,13 @@ namespace WindowsFormsApplication1
             }
 
             PortManager portManager = new PortManager(portName, baudRate, parity, dataBits, stopBits);
-            portManager.Write(request, 0, request.Length);
-            
-            //aca deberia hacer un bucle que lea consecutivamente hasta que tenga algo y escriba en donde sea, podria usar el writeOutput
-            string[] portManagerResponse = portManager.ReadPort();
 
-            WriteOutput(portManagerResponse[0], portManagerResponse[1], portManagerResponse[2]);
+            //usar manejo de excepciones para cuando pida con ciertos parámetros y falle la escritura/lectura
+            portManager.OpenPort();
+            portManager.Write(request, 0, request.Length);
+
+            WriterThread = new Thread(() => readPortBufferAndWriteOnWindow(portManager));
+            WriterThread.Start();
         }
 
         private void stopQuery_Click(object sender, EventArgs e)
@@ -340,7 +350,28 @@ namespace WindowsFormsApplication1
         private void TerminateThreads(object sender, EventArgs e)
         {
             terminate = true;
-            ConfigScan.Abort();
+            if (WriterThread != null && WriterThread.ThreadState == ThreadState.Running)
+            {
+                WriterThread.Abort();
+            }
+            if (ConfigScan != null && ConfigScan.ThreadState == ThreadState.Running)
+            {
+                ConfigScan.Abort();
+            }
+        }
+
+        private void readPortBufferAndWriteOnWindow(PortManager portManager)
+        {
+            while (true)
+            {
+                string[] portManagerResponse = portManager.ReadPort();
+                if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "")
+                {
+                    WriteOutput(portManagerResponse[0], portManagerResponse[1], portManagerResponse[2]);
+                    break;
+                }
+                Thread.Sleep(200);
+            }
         }
 
     }
