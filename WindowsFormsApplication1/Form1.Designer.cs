@@ -64,8 +64,8 @@
             this.dispositiveID = new System.Windows.Forms.NumericUpDown();
             this.inputFirstParam = new System.Windows.Forms.NumericUpDown();
             this.inputSecondParam = new System.Windows.Forms.NumericUpDown();
-            this.retriesNumber = new System.Windows.Forms.NumericUpDown();
-            this.retryTimeout = new System.Windows.Forms.NumericUpDown();
+            this.numberOfRetriesInput = new System.Windows.Forms.NumericUpDown();
+            this.timeoutInput = new System.Windows.Forms.NumericUpDown();
             this.cleanOutputButton = new System.Windows.Forms.Button();
             this.labelThirdParam = new System.Windows.Forms.Label();
             this.inputThirdParam = new System.Windows.Forms.RichTextBox();
@@ -73,8 +73,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dispositiveID)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputFirstParam)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputSecondParam)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.retriesNumber)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.retryTimeout)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numberOfRetriesInput)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.timeoutInput)).BeginInit();
             this.SuspendLayout();
             // 
             // cboPorts
@@ -372,6 +372,11 @@
             this.dispositiveID.Name = "dispositiveID";
             this.dispositiveID.Size = new System.Drawing.Size(124, 20);
             this.dispositiveID.TabIndex = 41;
+            this.dispositiveID.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
             // inputFirstParam
             // 
@@ -392,19 +397,39 @@
             this.inputSecondParam.Size = new System.Drawing.Size(124, 20);
             this.inputSecondParam.TabIndex = 43;
             // 
-            // retriesNumber
+            // numberOfRetriesInput
             // 
-            this.retriesNumber.Location = new System.Drawing.Point(103, 282);
-            this.retriesNumber.Name = "retriesNumber";
-            this.retriesNumber.Size = new System.Drawing.Size(121, 20);
-            this.retriesNumber.TabIndex = 44;
+            this.numberOfRetriesInput.Location = new System.Drawing.Point(103, 282);
+            this.numberOfRetriesInput.Name = "numberOfRetriesInput";
+            this.numberOfRetriesInput.Size = new System.Drawing.Size(121, 20);
+            this.numberOfRetriesInput.TabIndex = 44;
+            this.numberOfRetriesInput.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             // 
-            // retryTimeout
+            // timeoutInput
             // 
-            this.retryTimeout.Location = new System.Drawing.Point(103, 316);
-            this.retryTimeout.Name = "retryTimeout";
-            this.retryTimeout.Size = new System.Drawing.Size(121, 20);
-            this.retryTimeout.TabIndex = 45;
+            this.timeoutInput.Location = new System.Drawing.Point(103, 316);
+            this.timeoutInput.Maximum = new decimal(new int[] {
+            1500,
+            0,
+            0,
+            0});
+            this.timeoutInput.Minimum = new decimal(new int[] {
+            200,
+            0,
+            0,
+            0});
+            this.timeoutInput.Name = "timeoutInput";
+            this.timeoutInput.Size = new System.Drawing.Size(121, 20);
+            this.timeoutInput.TabIndex = 45;
+            this.timeoutInput.Value = new decimal(new int[] {
+            200,
+            0,
+            0,
+            0});
             // 
             // cleanOutputButton
             // 
@@ -450,8 +475,8 @@
             this.Controls.Add(this.inputThirdParam);
             this.Controls.Add(this.labelThirdParam);
             this.Controls.Add(this.cleanOutputButton);
-            this.Controls.Add(this.retryTimeout);
-            this.Controls.Add(this.retriesNumber);
+            this.Controls.Add(this.timeoutInput);
+            this.Controls.Add(this.numberOfRetriesInput);
             this.Controls.Add(this.inputSecondParam);
             this.Controls.Add(this.inputFirstParam);
             this.Controls.Add(this.dispositiveID);
@@ -493,8 +518,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dispositiveID)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputFirstParam)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputSecondParam)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.retriesNumber)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.retryTimeout)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numberOfRetriesInput)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.timeoutInput)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -537,8 +562,8 @@
         private System.Windows.Forms.TextBox toSendTextBox;
         private System.Windows.Forms.NumericUpDown inputFirstParam;
         private System.Windows.Forms.NumericUpDown inputSecondParam;
-        private System.Windows.Forms.NumericUpDown retriesNumber;
-        private System.Windows.Forms.NumericUpDown retryTimeout;
+        private System.Windows.Forms.NumericUpDown numberOfRetriesInput;
+        private System.Windows.Forms.NumericUpDown timeoutInput;
         private System.Windows.Forms.Button cleanOutputButton;
         private System.Windows.Forms.Label labelThirdParam;
         private System.Windows.Forms.RichTextBox inputThirdParam;

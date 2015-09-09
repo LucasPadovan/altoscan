@@ -44,6 +44,9 @@ namespace WindowsFormsApplication1
 
         int variablesLimit = 120;
 
+        int timeout;
+        int numberOfRetries;
+
         public Form1()
         {
             InitializeComponent();
@@ -328,10 +331,7 @@ namespace WindowsFormsApplication1
 
         // Start of button function binding
         // Cosas a implementar:
-        //  un buffer interno (array de strings) para guardar todo lo que haya que escribir, uno por cada output, para las consultas sucesivas.
-        //  dividir el metodo de escribir en los outputs del de leer y guardar en el buffer interno lo leido del port manager.
-        //  consultas sucesivas: cuando se pidan mas de 120 valores, o se quieran escribir mas de esos, se dividira usando modulo y el resto: 130 mod 120 = 10, 130/120 = 1, se deberan hacer dos consultas, donde la primera sea de 120 valores desde el 0, y la segunda sea de 10 valores desde el 120. El buffer interno a crear sera un array de dos arrays de 3 strings cada uno, correspondiente a cada salida.
-        //  timeout: si se da timeout de 2 segundos, que el sleep del thread de leer del buffer del portManager sea de 100ms y lo ejecute 20 veces al guardar el tiempo de inicializacion en una variable y compararlo con el itempo actual de ejecucion. Si no se obtiene nada pasado ese tiempo, aumentar uno a las repeticiones y comparar con lo obtenido del campo ingresado.
+        //  Si no se puede comunicar que largue un error y termine
 
 
         private void startQuery_Click(object sender, EventArgs e)
@@ -343,6 +343,8 @@ namespace WindowsFormsApplication1
 
             int baudRate = int.Parse(cboBaudRate.Text);
             int dataBits = int.Parse(cboDataBits.Text);
+            numberOfRetries = int.Parse(numberOfRetriesInput.Text);
+            timeout = int.Parse(timeoutInput.Text);
 
             Parity parity = Parity.None;
             switch (parityName)
@@ -385,21 +387,20 @@ namespace WindowsFormsApplication1
 
             //usar manejo de excepciones para cuando pida con ciertos parámetros y falle la escritura/lectura
             portManager.OpenPort();
-            hexaOutputString = new string[requests.Count];
+            hexaOutputString    = new string[requests.Count];
             decimalOutputString = new string[requests.Count];
-            binaryOutputString = new string[requests.Count];
+            binaryOutputString  = new string[requests.Count];
             
             int counter = 0;
             foreach(var request in requests)
             {
                 portManager.Write(request, 0, request.Length);
                 readPortBuffer(portManager, counter);
+                portManager.CleanPortBuffer();
                 WriteOutput(hexaOutputString[counter], decimalOutputString[counter], binaryOutputString[counter]);
                 counter ++;
             }
             portManager.ClosePort();
-            //WriterThread = new Thread(() => readPortBufferAndWriteOnWindow(portManager));
-            //WriterThread.Start();
         }
 
         private void stopQuery_Click(object sender, EventArgs e)
@@ -432,7 +433,6 @@ namespace WindowsFormsApplication1
                 string[] portManagerResponse = portManager.ReadPort();
                 if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "")
                 {
-                    //aca no deberia hacer el write output, deberia guardar en las variables nuevas que puse arriba, appendearlas y despues escribir cuando terminen todos.
                     WriteOutput(portManagerResponse[0], portManagerResponse[1], portManagerResponse[2]);
                     break;
                 }
@@ -442,18 +442,20 @@ namespace WindowsFormsApplication1
 
         private void readPortBuffer(PortManager portManager, int counter)
         {
-            while (true)
+            int actualNumberOfRetries = -1;
+            while (actualNumberOfRetries <= numberOfRetries)
             {
                 string[] portManagerResponse = portManager.ReadPort();
                 if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "")
                 {
-                    string header                = "\n Response " + Convert.ToString(counter) + " -- ";
+                    string header                = "\nResponse " + Convert.ToString(counter) + " -- ";
                     hexaOutputString[counter]    = header + portManagerResponse[0];
                     decimalOutputString[counter] = header + portManagerResponse[1];
                     binaryOutputString[counter]  = header + portManagerResponse[2];
                     break;
                 }
-                Thread.Sleep(100);
+                Thread.Sleep(timeout);
+                actualNumberOfRetries ++;
             }
         }
 

@@ -67,6 +67,8 @@ namespace TransmisionDatos
 
         public void Write(byte[] request, int offset, int count)
         {
+            if (!port.IsOpen)
+            { port.Open(); }
             port.Write(request, offset, count); 
         }
 
@@ -79,6 +81,13 @@ namespace TransmisionDatos
             response[2]  = binaryString;
 
             return response;
+        }
+
+        public void CleanPortBuffer() 
+        {
+            hexaString = "";
+            decimalString = "";
+            binaryString = "";
         }
 
         private void port_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -94,7 +103,7 @@ namespace TransmisionDatos
             string binString = "";
 
             port.Read(buffer, 0, bytes);
-
+            port.Close();
             foreach (var mByte in buffer)
             {
                 if (--count > 0) { decString += Convert.ToInt16(mByte).ToString() + "-"; }
