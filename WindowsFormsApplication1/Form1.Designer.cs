@@ -383,6 +383,11 @@
             // inputSecondParam
             // 
             this.inputSecondParam.Location = new System.Drawing.Point(378, 155);
+            this.inputSecondParam.Maximum = new decimal(new int[] {
+            1200,
+            0,
+            0,
+            0});
             this.inputSecondParam.Name = "inputSecondParam";
             this.inputSecondParam.Size = new System.Drawing.Size(124, 20);
             this.inputSecondParam.TabIndex = 43;
@@ -530,7 +535,6 @@
         private System.Windows.Forms.Label label14;
         private System.Windows.Forms.Button stopQuery;
         private System.Windows.Forms.TextBox toSendTextBox;
-        private System.Windows.Forms.NumericUpDown dispositiveID;
         private System.Windows.Forms.NumericUpDown inputFirstParam;
         private System.Windows.Forms.NumericUpDown inputSecondParam;
         private System.Windows.Forms.NumericUpDown retriesNumber;
@@ -539,6 +543,7 @@
         private System.Windows.Forms.Label labelThirdParam;
         private System.Windows.Forms.RichTextBox inputThirdParam;
         private System.Windows.Forms.TextBox textBox1;
+        public System.Windows.Forms.NumericUpDown dispositiveID;
     }
 }
 

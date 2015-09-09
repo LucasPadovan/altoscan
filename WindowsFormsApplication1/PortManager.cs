@@ -60,6 +60,10 @@ namespace TransmisionDatos
                 port.Open();
             }
         }
+        public void ClosePort()
+        {
+            port.Close();
+        }
 
         public void Write(byte[] request, int offset, int count)
         {
@@ -112,8 +116,6 @@ namespace TransmisionDatos
             Console.WriteLine("Response in hexa: "    + hexaString   );
             Console.WriteLine("Response in decimal: " + decimalString);
             Console.WriteLine("Response in binary: "  + binaryString );
-
-            port.Close();
         }
     }
 }

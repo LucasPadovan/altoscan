@@ -34,8 +34,15 @@ namespace WindowsFormsApplication1
         Boolean terminate = false;
 
         byte[] request = new byte[8];
+        List<byte[]> requests;
 
         PortManager portManager;
+
+        string[] hexaOutputString;
+        string[] decimalOutputString;
+        string[] binaryOutputString;
+
+        int variablesLimit = 120;
 
         public Form1()
         {
@@ -139,19 +146,57 @@ namespace WindowsFormsApplication1
         private void ReadConfig() {
             while (!terminate && ConfigScan.IsAlive)
             {
-                int DispositiveId = int.Parse(dispositiveID.Text);
-                int FirstParam    = int.Parse(inputFirstParam.Text);
-                int SecondParam   = int.Parse(inputSecondParam.Text);
+                //aca deberia dividir los requests en varios.
+                int DispositiveId;
+                int FirstParam;
+                int SecondParam;
 
                 string   stringy          = ReadTextArea();
                 string[] ThirdParam       = stringy.Split(",".ToArray());
                 string   FunctionSelected = ReadFunctionSelected();
+
+                //deberia usar una expresion regular para sacar todo lo que sea un "-"
+                bool dispositiveHasValidText = dispositiveID.Text    == "" || dispositiveID.Text    == "-";
+                bool firstParamHasValidText  = inputFirstParam.Text  == "" || inputFirstParam.Text  == "-";
+                bool secondParamHasValidText = inputSecondParam.Text == "" || inputSecondParam.Text == "-";
+
+                //con esto evitamos que se traten de parsear valores que no se puedan hacer int. Podria usar un TryParse o algo asi tambien.
+                if (dispositiveHasValidText) { DispositiveId = 0; }
+                else                         { DispositiveId = int.Parse(dispositiveID.Text); }
+
+                if (firstParamHasValidText)  { FirstParam = 0; }
+                else                         { FirstParam = int.Parse(inputFirstParam.Text); }
+
+                if (secondParamHasValidText) { SecondParam = 0; }
+                else                         { SecondParam = int.Parse(inputSecondParam.Text); }
 
                 switch (FunctionSelected) {
                     case "3":
                         EnableInputFirstParam(true);
                         EnableInputSecondParam(true);
                         EnableInputThirdParam(false);
+
+                        int variablesLeft    = SecondParam % variablesLimit;
+                        int numberOfRequests = 1;
+                        int extraRequests    = ( SecondParam - 1 ) / variablesLimit;
+                        numberOfRequests    += extraRequests;
+                        // deberia hacer un array con esta cantidad de hilos, en el que les pase el index que estoy laburando ahora.
+                        // deberia inicializar los array de salida con esta cantidad de elementos
+                        // los hilos deberian guardar sus valores de salida en el lugar del array segun el index que les paso.
+
+                        requests = new List<byte[]>();
+                        for (int i = 0; i < numberOfRequests; i++)
+                        {
+                            int startingAddress = FirstParam + variablesLimit * i;
+                            if (i == extraRequests) {
+                                requests.Add(RequestBuilder.BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLeft));
+                            }
+                            else
+                            {
+                                requests.Add(RequestBuilder.BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLimit));
+                            }
+                        };
+
                         request = RequestBuilder.BuildReadRegisterRequest(DispositiveId, FirstParam, SecondParam);
                         break;
                     case "6":
@@ -163,7 +208,9 @@ namespace WindowsFormsApplication1
 
                         if (int.TryParse(ThirdParam[0], out value)) { }
                         else { value = 0; }
+                        requests = new List<byte[]>();
                         request = RequestBuilder.BuildWriteRegisterRequest(DispositiveId, FirstParam, value);
+                        requests.Add(request);
                         break;
                     case "16":
                         int[] values;
@@ -190,11 +237,18 @@ namespace WindowsFormsApplication1
                                 }
                             }   
                         }
+                        requests = new List<byte[]>();
                         request = RequestBuilder.BuildWriteMultipleRegistersRequest(DispositiveId, FirstParam, SecondParam, values);
+                        requests.Add(request);
                         break;
                 }
 
-                string TextToWrite = BitConverter.ToString(request);
+                string TextToWrite = "";
+                foreach (var request in requests)
+                {
+                    if (TextToWrite != "") { TextToWrite += ", "; }
+                    TextToWrite += BitConverter.ToString(request);
+                }
                 
                 WriteConfig(TextToWrite);
 
@@ -266,9 +320,9 @@ namespace WindowsFormsApplication1
                 this.Invoke(new Action<string, string, string>(WriteOutput), new object[] { hexaValue, decimalValue, binaryValue });
                 return;
             }
-            decimalOutput.Text = decimalValue;
-            hexaOutput.Text    = hexaValue;
-            binOutput.Text     = binaryValue;
+            decimalOutput.Text += decimalValue;
+            hexaOutput.Text    += hexaValue;
+            binOutput.Text     += binaryValue;
         }
 
 
@@ -327,14 +381,25 @@ namespace WindowsFormsApplication1
                     break;
             }
 
-            PortManager portManager = new PortManager(portName, baudRate, parity, dataBits, stopBits);
+            portManager = new PortManager(portName, baudRate, parity, dataBits, stopBits);
 
             //usar manejo de excepciones para cuando pida con ciertos parámetros y falle la escritura/lectura
             portManager.OpenPort();
-            portManager.Write(request, 0, request.Length);
-
-            WriterThread = new Thread(() => readPortBufferAndWriteOnWindow(portManager));
-            WriterThread.Start();
+            hexaOutputString = new string[requests.Count];
+            decimalOutputString = new string[requests.Count];
+            binaryOutputString = new string[requests.Count];
+            
+            int counter = 0;
+            foreach(var request in requests)
+            {
+                portManager.Write(request, 0, request.Length);
+                readPortBuffer(portManager, counter);
+                WriteOutput(hexaOutputString[counter], decimalOutputString[counter], binaryOutputString[counter]);
+                counter ++;
+            }
+            portManager.ClosePort();
+            //WriterThread = new Thread(() => readPortBufferAndWriteOnWindow(portManager));
+            //WriterThread.Start();
         }
 
         private void stopQuery_Click(object sender, EventArgs e)
@@ -367,10 +432,28 @@ namespace WindowsFormsApplication1
                 string[] portManagerResponse = portManager.ReadPort();
                 if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "")
                 {
+                    //aca no deberia hacer el write output, deberia guardar en las variables nuevas que puse arriba, appendearlas y despues escribir cuando terminen todos.
                     WriteOutput(portManagerResponse[0], portManagerResponse[1], portManagerResponse[2]);
                     break;
                 }
                 Thread.Sleep(200);
+            }
+        }
+
+        private void readPortBuffer(PortManager portManager, int counter)
+        {
+            while (true)
+            {
+                string[] portManagerResponse = portManager.ReadPort();
+                if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "")
+                {
+                    string header                = "\n Response " + Convert.ToString(counter) + " -- ";
+                    hexaOutputString[counter]    = header + portManagerResponse[0];
+                    decimalOutputString[counter] = header + portManagerResponse[1];
+                    binaryOutputString[counter]  = header + portManagerResponse[2];
+                    break;
+                }
+                Thread.Sleep(100);
             }
         }
 
