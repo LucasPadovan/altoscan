@@ -135,12 +135,6 @@ namespace WindowsFormsApplication1
             hexaOutput.Text    += text;
             binOutput.Text     += text;
         }
-        private void WriteTextOnWindow(string text)
-        {
-            decimalOutput.Text = text;
-            hexaOutput.Text    = text;
-            binOutput.Text     = text;
-        }
         private void StartConfigScanThread()
         {
             ConfigScan = new Thread(ReadConfig);
@@ -175,64 +169,79 @@ namespace WindowsFormsApplication1
 
                 switch (FunctionSelected) {
                     case "3":
+                        //Habilita los parametros que la funcion 3 necesita
                         EnableInputFirstParam(true);
                         EnableInputSecondParam(true);
                         EnableInputThirdParam(false);
 
+                        //Calculamos cantidad request y el tamaño de la ultima request
                         int variablesLeft    = SecondParam % variablesLimit;
                         int numberOfRequests = 1;
                         int extraRequests    = ( SecondParam - 1 ) / variablesLimit;
                         numberOfRequests    += extraRequests;
-                        // deberia hacer un array con esta cantidad de hilos, en el que les pase el index que estoy laburando ahora.
-                        // deberia inicializar los array de salida con esta cantidad de elementos
-                        // los hilos deberian guardar sus valores de salida en el lugar del array segun el index que les paso.
 
+                        //Lista para agregar request en caso de que sea necesario mas de una request
                         requests = new List<byte[]>();
+
                         for (int i = 0; i < numberOfRequests; i++)
                         {
+                            //Armamos las request necesarias
                             int startingAddress = FirstParam + variablesLimit * i;
+                            //Si es la ultima request, le seteamos como cantidad de registros el resto de la division 
                             if (i == extraRequests) {
                                 requests.Add(RequestBuilder.BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLeft));
                             }
+                            //Si no es la ultima request, armamos con el limite maximo como cantidad de registros
                             else
                             {
                                 requests.Add(RequestBuilder.BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLimit));
                             }
                         };
 
-                        request = RequestBuilder.BuildReadRegisterRequest(DispositiveId, FirstParam, SecondParam);
+            //            request = RequestBuilder.BuildReadRegisterRequest(DispositiveId, FirstParam, SecondParam);
                         break;
                     case "6":
                         int value;
 
+                        //Habilito los parametros para la funcion 6
                         EnableInputFirstParam(true);
                         EnableInputSecondParam(false);
                         EnableInputThirdParam(true);
 
+                        //Tercer parametro es un array de valores, la funcion 6 solo escribe un valor, por eso se toma el primero del array
                         if (int.TryParse(ThirdParam[0], out value)) { }
                         else { value = 0; }
+                        //Creamos listado de requests que va a tener solo una request
                         requests = new List<byte[]>();
+                        //Creamos la request de funcion 6, direccion inicial y valor a escribir
                         request = RequestBuilder.BuildWriteRegisterRequest(DispositiveId, FirstParam, value);
+                        //Agregamos la request al listado
                         requests.Add(request);
                         break;
                     case "16":
                         int[] values;
                         int   counter = 0;
 
+                        //Habilitamos todos los parametros para funcion 16, pos inicial, cantidad de vars, valores de las vars-
                         EnableInputFirstParam(true);
                         EnableInputSecondParam(true);
                         EnableInputThirdParam(true);
                         
+                        //Si son 0 elementos o menos, la request no se arma bien
                         if (SecondParam <= 0)
                         {
                             values = new int[0]; //catch exception on asking for cero elements or less
                         }
+                        //Si hay mas de 0 elementos
                         else
                         {
+                            //Creamos un array de cantidad igual a la cantidad de elementos a escribir
                             values = new int[SecondParam]; //catch exception on asking for cero elements or less
                             
+                            //Por cada uno de los valores de las variables
                             foreach (var paramString in ThirdParam)
                             {
+                                //Si el contador es menor a la cantidad de variables, ponemos el valor en "values" que van a la request
                                 if (counter < SecondParam && int.TryParse(paramString, out values[counter]))
                                 {
                                     //si el numero es mayor a lo que puede contener 4 digitos hexadecimales, poner el maximo posible.
@@ -240,7 +249,9 @@ namespace WindowsFormsApplication1
                                 }
                             }   
                         }
+                        //Arma listado de requests
                         requests = new List<byte[]>();
+                        //Pone la request en el listado con la direccion inicial, cantidad de registros y los valores de las variables
                         request = RequestBuilder.BuildWriteMultipleRegistersRequest(DispositiveId, FirstParam, SecondParam, values);
                         requests.Add(request);
                         break;
@@ -253,6 +264,7 @@ namespace WindowsFormsApplication1
                     TextToWrite += BitConverter.ToString(request);
                 }
                 
+                //Escribe en el form la/s request/s armada/s
                 WriteConfig(TextToWrite);
 
                 Thread.Sleep(200);
@@ -385,32 +397,57 @@ namespace WindowsFormsApplication1
 
             portManager = new PortManager(portName, baudRate, parity, dataBits, stopBits);
 
-            //usar manejo de excepciones para cuando pida con ciertos parámetros y falle la escritura/lectura
-            portManager.OpenPort();
-            hexaOutputString    = new string[requests.Count];
-            decimalOutputString = new string[requests.Count];
-            binaryOutputString  = new string[requests.Count];
-            
-            int counter = 0;
-            foreach(var request in requests)
+            //Por cada intento
+            for (int currentRetry = 0; currentRetry < numberOfRetries; currentRetry++ )
             {
-                portManager.Write(request, 0, request.Length);
-                readPortBuffer(portManager, counter);
-                portManager.CleanPortBuffer();
-                WriteOutput(hexaOutputString[counter], decimalOutputString[counter], binaryOutputString[counter]);
-                counter ++;
+                //Calculamos inicio del intento
+                DateTime initialTime = DateTime.Now;
+                var differenceInMilliseconds = (DateTime.Now - initialTime).TotalMilliseconds;
+                
+                //Mientras no se pase del timeout del intento
+                while (differenceInMilliseconds < timeout)
+                {
+                    //Actualizamos diferencia entre el inicio y este momento de ejecucion
+                    differenceInMilliseconds = (DateTime.Now - initialTime).TotalMilliseconds;
+                    try
+                    {
+                        //Abrimos el puerto
+                        portManager.OpenPort();
+                        //Inicializamos las variables del formulario como arrays de string de tamaño = cant de requests
+                        hexaOutputString    = new string[requests.Count];
+                        decimalOutputString = new string[requests.Count];
+                        binaryOutputString  = new string[requests.Count];
+
+                        int counter = 0;
+                        foreach (var request in requests)
+                        {
+                            //si el id de dispositivo o algo esta mal, al querer escribir se detona
+                            portManager.Write(request, 0, request.Length);
+                            //Aca leemos el buffer todo el tiempo, hasta que algo vuelve
+                            readPortBuffer(portManager, counter);
+                            //Cuando tiene las variables completas, escribe el formulario
+                            WriteOutput(hexaOutputString[counter], decimalOutputString[counter], binaryOutputString[counter]);
+                            counter++;
+                        }
+                        currentRetry = numberOfRetries;
+                        break;
+                    }
+                    catch { }
+                    currentRetry++;
+                }
             }
-            portManager.ClosePort();
+
         }
 
         private void stopQuery_Click(object sender, EventArgs e)
         {
-           // writeTextOnWindow("");
         }
 
         private void cleanOutputButton_Click(object sender, EventArgs e)
         {
-            WriteTextOnWindow("");
+            decimalOutput.Text = "";
+            hexaOutput.Text    = "";
+            binOutput.Text     = "";
         }
 
         private void TerminateThreads(object sender, EventArgs e)
@@ -420,30 +457,12 @@ namespace WindowsFormsApplication1
             {
                 WriterThread.Abort();
             }
-            if (ConfigScan != null && ConfigScan.ThreadState == ThreadState.Running)
-            {
-                ConfigScan.Abort();
-            }
-        }
-
-        private void readPortBufferAndWriteOnWindow(PortManager portManager)
-        {
-            while (true)
-            {
-                string[] portManagerResponse = portManager.ReadPort();
-                if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "")
-                {
-                    WriteOutput(portManagerResponse[0], portManagerResponse[1], portManagerResponse[2]);
-                    break;
-                }
-                Thread.Sleep(200);
-            }
+            ConfigScan.Abort();
         }
 
         private void readPortBuffer(PortManager portManager, int counter)
         {
-            int actualNumberOfRetries = -1;
-            while (actualNumberOfRetries <= numberOfRetries)
+            while (true)
             {
                 string[] portManagerResponse = portManager.ReadPort();
                 if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "")
@@ -454,8 +473,7 @@ namespace WindowsFormsApplication1
                     binaryOutputString[counter]  = header + portManagerResponse[2];
                     break;
                 }
-                Thread.Sleep(timeout);
-                actualNumberOfRetries ++;
+                Thread.Sleep(200);
             }
         }
 

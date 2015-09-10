@@ -10,11 +10,17 @@ namespace TransmisionDatos
         private const int WRITE_REGISTER = 6;
         private const int WRITE_MULTIPLE_REGISTERS = 16;
 
+        //Funcion 3
         public static byte[] BuildReadRegisterRequest(int deviceId, int startAddress, int registerQuantity)
         {
+            //Array de string de 8 bytes
             request = new byte[8];
+            //Dispositivo 
             request[0] = Convert.ToByte(deviceId);
+            //Funcion de lectura
             request[1] = Convert.ToByte(READ_REGISTER);
+
+            //Transformamos direccion de inicio de lectura a 2 bytes
             if (startAddress < 255)
             {
                 request[2] = 0;
@@ -28,6 +34,7 @@ namespace TransmisionDatos
                 request[3] = hexAddress[1];
             }
 
+            //Transformamos la cantidad de registros a leer a 2 bytes
             if (registerQuantity < 255)
             {
                 request[4] = 0;
@@ -50,11 +57,17 @@ namespace TransmisionDatos
             return request;
         }
 
+        //Funcion 6
         public static byte[] BuildWriteRegisterRequest(int deviceId, int registerAddress, int registerValue)
         {
+            //Array de string de largo 8
             request = new byte[8];
+            //ID dispositivo
             request[0] = Convert.ToByte(deviceId);
+            //Nro de funcion
             request[1] = Convert.ToByte(WRITE_REGISTER);
+
+            //Transformamos direccion de registro de inicio en 2 bytes
             if (registerAddress < 255)
             {
                 request[2] = 0;
@@ -68,6 +81,7 @@ namespace TransmisionDatos
                 request[3] = hexAddress[1];
             }
 
+            //Transformamos el valor que vamos a escribir en 2 bytes
             if (registerValue < 255)
             {
                 request[4] = 0;
@@ -90,11 +104,14 @@ namespace TransmisionDatos
             return request;
         }
 
+        //Funcion 16
         public static byte[] BuildWriteMultipleRegistersRequest(int deviceId, int startingAddress, int registerQuantity,
             int[] registersValues)
         {
+            //Largo de la request, 9 mas el nro de registros * 2
             int requestLength = 9 + (registerQuantity*2);
 
+            //Creamos array de bytes segun el largo que necesitemos
             request = new byte[requestLength];
             request[0] = Convert.ToByte(deviceId);
             request[1] = Convert.ToByte(WRITE_MULTIPLE_REGISTERS);
@@ -124,13 +141,17 @@ namespace TransmisionDatos
                 request[5] = hexLength[1];
             }
 
+            //Cantidad de bytes que corresponden a los registros a escribir
             request[6] = Convert.ToByte(registerQuantity*2);
 
+            //Posicion donde vamos a empezar a escribir valores a la request
             int valuesStartingByte = 7; 
+            //Desde 0 hasta la cantidad de registros
             for (int i = 0; i < registerQuantity; i++)
             {
                 int value = registersValues[i];
 
+                //Transforma el entero en 2 bytes
                 if (value < 255)
                 {
                     request[valuesStartingByte] = 0;
@@ -144,10 +165,12 @@ namespace TransmisionDatos
                     request[valuesStartingByte+1] = hexAddress[1];
                 }
 
+                //Movemos a la derecha 2 bytes para el siguiente registro
                 valuesStartingByte = valuesStartingByte + 2;
             }
 
             byte[] crc = GetCRC(request);
+            //Ubicamos CRC en la penultima y ultima posicion de la request
             request[requestLength-2] = crc[0];
             request[requestLength-1] = crc[1];
 

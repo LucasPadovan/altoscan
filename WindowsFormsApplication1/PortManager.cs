@@ -69,7 +69,10 @@ namespace TransmisionDatos
         {
             if (!port.IsOpen)
             { port.Open(); }
-            port.Write(request, offset, count); 
+            //port.ReadTimeout = 200;
+            //port.WriteTimeout = 200;
+            //request, 0, cantidad de bytes de la request
+            port.Write(request, offset, count);
         }
 
         public string[] ReadPort()
@@ -81,13 +84,6 @@ namespace TransmisionDatos
             response[2]  = binaryString;
 
             return response;
-        }
-
-        public void CleanPortBuffer() 
-        {
-            hexaString = "";
-            decimalString = "";
-            binaryString = "";
         }
 
         private void port_DataReceived(object sender, SerialDataReceivedEventArgs e)

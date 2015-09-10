@@ -417,11 +417,6 @@
             0,
             0,
             0});
-            this.timeoutInput.Minimum = new decimal(new int[] {
-            200,
-            0,
-            0,
-            0});
             this.timeoutInput.Name = "timeoutInput";
             this.timeoutInput.Size = new System.Drawing.Size(121, 20);
             this.timeoutInput.TabIndex = 45;
