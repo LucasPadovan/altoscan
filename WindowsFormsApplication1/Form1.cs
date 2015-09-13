@@ -16,6 +16,7 @@ namespace WindowsFormsApplication1
 {
     public partial class Form1 : Form
     {
+
         SerialPort ComPort = new SerialPort();
 
         internal delegate void SerialDataReceivedEventHandlerDelegate(
@@ -51,16 +52,21 @@ namespace WindowsFormsApplication1
         {
             InitializeComponent();
             InitializeFields();
+            //Hilo que arma la request a medida q cambian los inputs
             StartConfigScanThread();
+            //Observador que recibe datos del puerto
             ComPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(port_DataReceived_1);
             this.FormClosed += TerminateThreads;
         }
 
+        /**
+         * Inicializa todos los campos del formulario
+         */
         private void InitializeFields()
         {
             string[] ArrayComPortsNames = null;
 
-            //Com Ports
+            //Agrega todos los Com Ports al form
             ArrayComPortsNames = SerialPort.GetPortNames();
             foreach (var portName in ArrayComPortsNames)
             {
@@ -68,7 +74,7 @@ namespace WindowsFormsApplication1
             }
             cboPorts.Text = ArrayComPortsNames[1];
 
-            //Baud Rate
+            //Agrega Baud Rate al form
             ArrayList baudRates = new ArrayList() {300, 600, 1200, 2400, 9600, 14400, 19200, 38400, 57600, 115200};
             foreach (var baudRate in baudRates)
             {
@@ -76,13 +82,14 @@ namespace WindowsFormsApplication1
 
             };
             cboBaudRate.Items.ToString();
-            //get the first item print it in the text 
+
+            //get the first item and print it in the text 
             cboBaudRate.Text = cboBaudRate.Items[4].ToString();
             
             //Data Bits
             cboDataBits.Items.Add(7);
             cboDataBits.Items.Add(8);
-            //get the first item print it in the text 
+            //get the first item and print it in the text 
             cboDataBits.Text = cboDataBits.Items[1].ToString();
 
             //Stop Bits
@@ -120,6 +127,7 @@ namespace WindowsFormsApplication1
 
         }
 
+        //Listener que verifica que haya datos en el buffer
         private void port_DataReceived_1(object sender, SerialDataReceivedEventArgs e)
         {
             InputData = ComPort.ReadExisting();
@@ -129,18 +137,22 @@ namespace WindowsFormsApplication1
             }
         }
 
+        //Muestra datos en el formulario (respuesta en decimal, hexa y binario)
         private void AppendTextOnWindow(string text)
         {
             decimalOutput.Text += text;
             hexaOutput.Text    += text;
             binOutput.Text     += text;
         }
+        //Inicia el hilo de escaneo de configuración desde form
         private void StartConfigScanThread()
         {
             ConfigScan = new Thread(ReadConfig);
             ConfigScan.Start();
         }
+        //Leer configuracion del form
         private void ReadConfig() {
+            //Mientras el hilo de configuracion este vivo 
             while (!terminate && ConfigScan.IsAlive)
             {
                 //aca deberia dividir los requests en varios.
@@ -170,9 +182,9 @@ namespace WindowsFormsApplication1
                 switch (FunctionSelected) {
                     case "3":
                         //Habilita los parametros que la funcion 3 necesita
-                        EnableInputFirstParam(true);
-                        EnableInputSecondParam(true);
-                        EnableInputThirdParam(false);
+                        EnableInputFirstParam(true); //Dir inicial
+                        EnableInputSecondParam(true); //Cantidad de variables
+                        EnableInputThirdParam(false); //Valor de variables
 
                         //Calculamos cantidad request y el tamaño de la ultima request
                         int variablesLeft    = SecondParam % variablesLimit;
@@ -198,45 +210,51 @@ namespace WindowsFormsApplication1
                             }
                         };
 
-            //            request = RequestBuilder.BuildReadRegisterRequest(DispositiveId, FirstParam, SecondParam);
+                        //request = RequestBuilder.BuildReadRegisterRequest(DispositiveId, FirstParam, SecondParam);
                         break;
+
                     case "6":
                         int value;
 
                         //Habilito los parametros para la funcion 6
-                        EnableInputFirstParam(true);
-                        EnableInputSecondParam(false);
-                        EnableInputThirdParam(true);
+                        EnableInputFirstParam(true); //Dir inicial
+                        EnableInputSecondParam(false); //Cantidad de variables
+                        EnableInputThirdParam(true); //Valor de variables
 
                         //Tercer parametro es un array de valores, la funcion 6 solo escribe un valor, por eso se toma el primero del array
                         if (int.TryParse(ThirdParam[0], out value)) { }
                         else { value = 0; }
+
                         //Creamos listado de requests que va a tener solo una request
                         requests = new List<byte[]>();
+
                         //Creamos la request de funcion 6, direccion inicial y valor a escribir
                         request = RequestBuilder.BuildWriteRegisterRequest(DispositiveId, FirstParam, value);
+
                         //Agregamos la request al listado
                         requests.Add(request);
                         break;
+
                     case "16":
                         int[] values;
                         int   counter = 0;
 
                         //Habilitamos todos los parametros para funcion 16, pos inicial, cantidad de vars, valores de las vars-
-                        EnableInputFirstParam(true);
-                        EnableInputSecondParam(true);
-                        EnableInputThirdParam(true);
+                        EnableInputFirstParam(true); //Dir inicial
+                        EnableInputSecondParam(true); //Cantidad de variables
+                        EnableInputThirdParam(true); //Valor de variables
                         
-                        //Si son 0 elementos o menos, la request no se arma bien
+                        //Si la cantidad de variables es 0 o menos, la request no se arma bien
                         if (SecondParam <= 0)
                         {
                             values = new int[0]; //catch exception on asking for cero elements or less
                         }
-                        //Si hay mas de 0 elementos
+
+                        //Si hay mas de 0 variables
                         else
                         {
-                            //Creamos un array de cantidad igual a la cantidad de elementos a escribir
-                            values = new int[SecondParam]; //catch exception on asking for cero elements or less
+                            //Creamos un array de cantidad igual a la cantidad de variables a escribir
+                            values = new int[SecondParam];
                             
                             //Por cada uno de los valores de las variables
                             foreach (var paramString in ThirdParam)
@@ -244,19 +262,22 @@ namespace WindowsFormsApplication1
                                 //Si el contador es menor a la cantidad de variables, ponemos el valor en "values" que van a la request
                                 if (counter < SecondParam && int.TryParse(paramString, out values[counter]))
                                 {
-                                    //si el numero es mayor a lo que puede contener 4 digitos hexadecimales, poner el maximo posible.
+                                    //Pasamos a la siguiente variable
                                     counter++;
                                 }
                             }   
                         }
+
                         //Arma listado de requests
                         requests = new List<byte[]>();
+
                         //Pone la request en el listado con la direccion inicial, cantidad de registros y los valores de las variables
                         request = RequestBuilder.BuildWriteMultipleRegistersRequest(DispositiveId, FirstParam, SecondParam, values);
                         requests.Add(request);
                         break;
                 }
 
+                //Arma la string con las request que se van a mostrar en el form, separadas por comas
                 string TextToWrite = "";
                 foreach (var request in requests)
                 {
@@ -341,11 +362,9 @@ namespace WindowsFormsApplication1
         }
 
 
-        // Start of button function binding
-        // Cosas a implementar:
-        //  Si no se puede comunicar que largue un error y termine
-
-
+        //Toma las request armadas guardadas en un param de esta clase, y ejecuta metodos del port
+        //    Cosas a implementar:
+        //    Si no se puede comunicar que largue un error y termine
         private void startQuery_Click(object sender, EventArgs e)
         {
             //String portName, int baudRate, Parity parity, int dataBits, StopBits stopBits
