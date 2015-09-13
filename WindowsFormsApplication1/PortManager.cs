@@ -22,9 +22,9 @@ namespace TransmisionDatos
         private StopBits stopBits;
         private delegate void SetTextDeleg(string text);
 
-        private string hexaString    = "";
+        private string hexaString = "";
         private string decimalString = "";
-        private string binaryString  = "";
+        private string binaryString = "";
 
         private bool reponseReceived = false;
 
@@ -65,6 +65,7 @@ namespace TransmisionDatos
             port.Close();
         }
 
+        //Verifica que el puerto este abierto (lo abre si esta cerrado) 
         public void Write(byte[] request, int offset, int count)
         {
             if (!port.IsOpen)
@@ -72,16 +73,24 @@ namespace TransmisionDatos
             //port.ReadTimeout = 200;
             //port.WriteTimeout = 200;
             //request, 0, cantidad de bytes de la request
-            port.Write(request, offset, count);
+            try
+            {
+                port.Write(request, offset, count);
+            }
+            catch (TimeoutException e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
         }
 
         public string[] ReadPort()
         {
             var response = new string[3];
 
-            response[0]  = hexaString;
-            response[1]  = decimalString;
-            response[2]  = binaryString;
+            response[0] = hexaString;
+            response[1] = decimalString;
+            response[2] = binaryString;
 
             return response;
         }
@@ -90,11 +99,11 @@ namespace TransmisionDatos
         {
             // Show all the incoming data in the port's buffer
 
-            reponseReceived  = false;
-            int bytes        = port.BytesToRead;
-            byte[] buffer    = new byte[bytes];
-            int count        = buffer.Length;
-            int count2       = buffer.Length;
+            reponseReceived = false;
+            int bytes = port.BytesToRead;
+            byte[] buffer = new byte[bytes];
+            int count = buffer.Length;
+            int count2 = buffer.Length;
             string decString = "";
             string binString = "";
 
@@ -103,24 +112,24 @@ namespace TransmisionDatos
             foreach (var mByte in buffer)
             {
                 if (--count > 0) { decString += Convert.ToInt16(mByte).ToString() + "-"; }
-                else             { decString += Convert.ToInt16(mByte).ToString();       }
+                else { decString += Convert.ToInt16(mByte).ToString(); }
             }
 
             foreach (byte mByte in buffer)
             {
                 if (--count2 > 0) { binString += Convert.ToString(mByte, 2).PadLeft(8, '0') + "-"; }
-                else              { binString += Convert.ToString(mByte, 2).PadLeft(8, '0');       }
+                else { binString += Convert.ToString(mByte, 2).PadLeft(8, '0'); }
             }
 
-            hexaString      = BitConverter.ToString(buffer);
-            decimalString   = decString;
-            binaryString    = binString;
+            hexaString = BitConverter.ToString(buffer);
+            decimalString = decString;
+            binaryString = binString;
             reponseReceived = true;
 
-            Console.WriteLine("Bytes to read: "       + bytes        );
-            Console.WriteLine("Response in hexa: "    + hexaString   );
+            Console.WriteLine("Bytes to read: " + bytes);
+            Console.WriteLine("Response in hexa: " + hexaString);
             Console.WriteLine("Response in decimal: " + decimalString);
-            Console.WriteLine("Response in binary: "  + binaryString );
+            Console.WriteLine("Response in binary: " + binaryString);
         }
     }
 }
