@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace TransmisionDatos
 {
@@ -21,7 +22,7 @@ namespace TransmisionDatos
             request[1] = Convert.ToByte(READ_REGISTER);
 
             //Transformamos direccion de inicio de lectura a 2 bytes
-            if (startAddress < 255)
+            if (startAddress < 256)
             {
                 request[2] = 0;
                 request[3] = Convert.ToByte(startAddress);
@@ -35,7 +36,7 @@ namespace TransmisionDatos
             }
 
             //Transformamos la cantidad de registros a leer a 2 bytes
-            if (registerQuantity < 255)
+            if (registerQuantity < 256)
             {
                 request[4] = 0;
                 request[5] = Convert.ToByte(registerQuantity);
@@ -68,7 +69,7 @@ namespace TransmisionDatos
             request[1] = Convert.ToByte(WRITE_REGISTER);
 
             //Transformamos direccion de registro de inicio en 2 bytes
-            if (registerAddress < 255)
+            if (registerAddress < 256)
             {
                 request[2] = 0;
                 request[3] = Convert.ToByte(registerAddress);
@@ -82,7 +83,7 @@ namespace TransmisionDatos
             }
 
             //Transformamos el valor que vamos a escribir en 2 bytes
-            if (registerValue < 255)
+            if (registerValue < 256)
             {
                 request[4] = 0;
                 request[5] = Convert.ToByte(registerValue);
@@ -90,7 +91,7 @@ namespace TransmisionDatos
             else
             {
                 string hexValue = registerValue.ToString("X");
-                byte[] hexLength = System.Text.Encoding.UTF8.GetBytes(hexValue);
+                byte[] hexLength = StringToByteArray(hexValue);
                 request[4] = hexLength[0];
                 request[5] = hexLength[1];
             }
@@ -115,7 +116,7 @@ namespace TransmisionDatos
             request = new byte[requestLength];
             request[0] = Convert.ToByte(deviceId);
             request[1] = Convert.ToByte(WRITE_MULTIPLE_REGISTERS);
-            if (startingAddress < 255)
+            if (startingAddress < 256)
             {
                 request[2] = 0;
                 request[3] = Convert.ToByte(startingAddress);
@@ -128,7 +129,7 @@ namespace TransmisionDatos
                 request[3] = hexAddress[1];
             }
 
-            if (registerQuantity < 255)
+            if (registerQuantity < 256)
             {
                 request[4] = 0;
                 request[5] = Convert.ToByte(registerQuantity);
@@ -152,7 +153,7 @@ namespace TransmisionDatos
                 int value = registersValues[i];
 
                 //Transforma el entero en 2 bytes
-                if (value < 255)
+                if (value < 256)
                 {
                     request[valuesStartingByte] = 0;
                     request[valuesStartingByte+1] = Convert.ToByte(value);
@@ -207,5 +208,9 @@ namespace TransmisionDatos
             return CRC;
         }
 
+        private static byte[] StringToByteArray(string hex)
+        {
+            return Enumerable.Range(0, hex.Length).Where(x => x % 2 == 0).Select(x => Convert.ToByte(hex.Substring(x, 2), 16)).ToArray();
+        }
     }
 }
