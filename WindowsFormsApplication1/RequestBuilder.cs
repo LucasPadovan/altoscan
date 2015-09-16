@@ -29,10 +29,10 @@ namespace TransmisionDatos
             }
             else
             {
-                string hexValue = registerValue.ToString("X");
+                string hexValue = startAddress.ToString("X");
                 byte[] hexLength = StringToByteArray(hexValue);
-                request[2] = hexAddress[0];
-                request[3] = hexAddress[1];
+                request[2] = hexLength[0];
+                request[3] = hexLength[1];
             }
 
             //Transformamos la cantidad de registros a leer a 2 bytes
@@ -43,7 +43,7 @@ namespace TransmisionDatos
             }
             else
             {
-                string hexValue = registerValue.ToString("X");
+                string hexValue = registerQuantity.ToString("X");
                 byte[] hexLength = StringToByteArray(hexValue);
                 request[4] = hexLength[0];
                 request[5] = hexLength[1];
@@ -78,8 +78,8 @@ namespace TransmisionDatos
             {
                 string hexValue = registerValue.ToString("X");
                 byte[] hexLength = StringToByteArray(hexValue); 
-                request[2] = hexAddress[0];
-                request[3] = hexAddress[1];
+                request[2] = hexLength[0];
+                request[3] = hexLength[1];
             }
 
             //Transformamos el valor que vamos a escribir en 2 bytes
@@ -123,10 +123,10 @@ namespace TransmisionDatos
             }
             else
             {
-                string hexValue = registerValue.ToString("X");
+                string hexValue = startingAddress.ToString("X");
                 byte[] hexLength = StringToByteArray(hexValue);
-                request[2] = hexAddress[0];
-                request[3] = hexAddress[1];
+                request[2] = hexLength[0];
+                request[3] = hexLength[1];
             }
 
             if (registerQuantity < 256)
@@ -136,7 +136,7 @@ namespace TransmisionDatos
             }
             else
             {
-                string hexValue = registerValue.ToString("X");
+                string hexValue = registerQuantity.ToString("X");
                 byte[] hexLength = StringToByteArray(hexValue);
                 request[4] = hexLength[0];
                 request[5] = hexLength[1];
@@ -160,10 +160,10 @@ namespace TransmisionDatos
                 }
                 else
                 {
-                    string hexValue = registerValue.ToString("X");
+                    string hexValue = value.ToString("X");
                     byte[] hexLength = StringToByteArray(hexValue);
-                    request[valuesStartingByte] = hexAddress[0];
-                    request[valuesStartingByte+1] = hexAddress[1];
+                    request[valuesStartingByte] = hexLength[0];
+                    request[valuesStartingByte+1] = hexLength[1];
                 }
 
                 //Movemos a la derecha 2 bytes para el siguiente registro
@@ -210,13 +210,13 @@ namespace TransmisionDatos
 
         private static byte[] StringToByteArray(string hex)
         {
-            String paddedHex = hex.PadLeft(4, '0')
-            String highString = paddedHex.Substring(0, 2)
-            String lowString = paddedHex.Substring(2, 2)
-            Byte highByte = Convert.ToByte(int.Parse(highString))
-            Byte lowByte = Convert.ToByte(int.Parse(lowString))
-            Byte[] response = new byte[2]
-            response[0] = highByte
+            String paddedHex = hex.PadLeft(4, '0');
+            String highString = paddedHex.Substring(0, 2);
+            String lowString = paddedHex.Substring(2, 2);
+            Byte highByte = Convert.ToByte(int.Parse(highString));
+            Byte lowByte = Convert.ToByte(int.Parse(lowString));
+            Byte[] response = new byte[2];
+            response[0] = highByte;
             response[1] = lowByte;
             return response;
         }
