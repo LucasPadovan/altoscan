@@ -29,8 +29,8 @@ namespace TransmisionDatos
             }
             else
             {
-                string hexValue = startAddress.ToString("X");
-                byte[] hexAddress = System.Text.Encoding.UTF8.GetBytes(hexValue);
+                string hexValue = registerValue.ToString("X");
+                byte[] hexLength = StringToByteArray(hexValue);
                 request[2] = hexAddress[0];
                 request[3] = hexAddress[1];
             }
@@ -43,8 +43,8 @@ namespace TransmisionDatos
             }
             else
             {
-                string hexValue = registerQuantity.ToString("X");
-                byte[] hexLength = System.Text.Encoding.UTF8.GetBytes(hexValue);
+                string hexValue = registerValue.ToString("X");
+                byte[] hexLength = StringToByteArray(hexValue);
                 request[4] = hexLength[0];
                 request[5] = hexLength[1];
             }
@@ -76,8 +76,8 @@ namespace TransmisionDatos
             }
             else
             {
-                string hexValue = registerAddress.ToString("X");
-                byte[] hexAddress = System.Text.Encoding.UTF8.GetBytes(hexValue);
+                string hexValue = registerValue.ToString("X");
+                byte[] hexLength = StringToByteArray(hexValue); 
                 request[2] = hexAddress[0];
                 request[3] = hexAddress[1];
             }
@@ -123,8 +123,8 @@ namespace TransmisionDatos
             }
             else
             {
-                string hexValue = startingAddress.ToString("X");
-                byte[] hexAddress = System.Text.Encoding.UTF8.GetBytes(hexValue);
+                string hexValue = registerValue.ToString("X");
+                byte[] hexLength = StringToByteArray(hexValue);
                 request[2] = hexAddress[0];
                 request[3] = hexAddress[1];
             }
@@ -136,8 +136,8 @@ namespace TransmisionDatos
             }
             else
             {
-                string hexValue = registerQuantity.ToString("X");
-                byte[] hexLength = System.Text.Encoding.UTF8.GetBytes(hexValue);
+                string hexValue = registerValue.ToString("X");
+                byte[] hexLength = StringToByteArray(hexValue);
                 request[4] = hexLength[0];
                 request[5] = hexLength[1];
             }
@@ -160,8 +160,8 @@ namespace TransmisionDatos
                 }
                 else
                 {
-                    string hexValue = value.ToString("X");
-                    byte[] hexAddress = System.Text.Encoding.UTF8.GetBytes(hexValue);
+                    string hexValue = registerValue.ToString("X");
+                    byte[] hexLength = StringToByteArray(hexValue);
                     request[valuesStartingByte] = hexAddress[0];
                     request[valuesStartingByte+1] = hexAddress[1];
                 }
@@ -210,7 +210,15 @@ namespace TransmisionDatos
 
         private static byte[] StringToByteArray(string hex)
         {
-            return Enumerable.Range(0, hex.Length).Where(x => x % 2 == 0).Select(x => Convert.ToByte(hex.Substring(x, 2), 16)).ToArray();
+            String paddedHex = hex.PadLeft(4, '0')
+            String highString = paddedHex.Substring(0, 2)
+            String lowString = paddedHex.Substring(2, 2)
+            Byte highByte = Convert.ToByte(int.Parse(highString))
+            Byte lowByte = Convert.ToByte(int.Parse(lowString))
+            Byte[] response = new byte[2]
+            response[0] = highByte
+            response[1] = lowByte;
+            return response;
         }
     }
 }
