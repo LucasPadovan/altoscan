@@ -53,7 +53,7 @@ namespace TransmisionDatos
             request[6] = crc[0];
             request[7] = crc[1];
 
-            Console.WriteLine("Request: " + BitConverter.ToString(request));
+            //Console.WriteLine("Request: " + BitConverter.ToString(request));
 
             return request;
         }
@@ -100,7 +100,7 @@ namespace TransmisionDatos
             request[6] = crc[0];
             request[7] = crc[1];
 
-            Console.WriteLine("Request: " + BitConverter.ToString(request));
+            //Console.WriteLine("Request: " + BitConverter.ToString(request));
 
             return request;
         }
@@ -175,7 +175,7 @@ namespace TransmisionDatos
             request[requestLength-2] = crc[0];
             request[requestLength-1] = crc[1];
 
-            Console.WriteLine("Request: " + BitConverter.ToString(request));
+            //Console.WriteLine("Request: " + BitConverter.ToString(request));
 
             return request;
         }

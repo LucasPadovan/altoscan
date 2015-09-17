@@ -25,8 +25,7 @@ namespace TransmisionDatos
         private string hexaString = "";
         private string decimalString = "";
         private string binaryString = "";
-
-        private bool reponseReceived = false;
+        private string statusString = "No data yet";
 
         public PortManager(String portName, int baudRate, Parity parity, int dataBits, StopBits stopBits)
         {
@@ -86,11 +85,12 @@ namespace TransmisionDatos
 
         public string[] ReadPort()
         {
-            var response = new string[3];
+            var response = new string[4];
 
             response[0] = hexaString;
             response[1] = decimalString;
             response[2] = binaryString;
+            response[3] = statusString;
 
             return response;
         }
@@ -99,7 +99,7 @@ namespace TransmisionDatos
         {
             // Show all the incoming data in the port's buffer
 
-            reponseReceived = false;
+            statusString = "No data yet";
             int bytes = port.BytesToRead;
             byte[] buffer = new byte[bytes];
             int count = buffer.Length;
@@ -124,12 +124,27 @@ namespace TransmisionDatos
             hexaString = BitConverter.ToString(buffer);
             decimalString = decString;
             binaryString = binString;
-            reponseReceived = true;
+            statusString = "Message received successfully";
 
-            Console.WriteLine("Bytes to read: " + bytes);
-            Console.WriteLine("Response in hexa: " + hexaString);
-            Console.WriteLine("Response in decimal: " + decimalString);
-            Console.WriteLine("Response in binary: " + binaryString);
+            string statusCode = Convert.ToString(hexaString[3]) + Convert.ToString(hexaString[4]);
+
+            switch (statusCode)
+            {
+                case "83":
+                    statusString = "Error 83, se intento leer más variables de las que existen";
+                    break;
+                case "86":
+                    statusString = "Error 86, se intento escribir en una posición inexistente";
+                    break;
+                case "90":
+                    statusString = "Error 90, se intento escribir en una posición inexistente";
+                    break;
+            }
+
+            //Console.WriteLine("Bytes to read: " + bytes);
+            //Console.WriteLine("Response in hexa: " + hexaString);
+            //Console.WriteLine("Response in decimal: " + decimalString);
+            //Console.WriteLine("Response in binary: " + binaryString);
         }
     }
 }

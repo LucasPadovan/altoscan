@@ -69,7 +69,7 @@
             this.cleanOutputButton = new System.Windows.Forms.Button();
             this.labelThirdParam = new System.Windows.Forms.Label();
             this.inputThirdParam = new System.Windows.Forms.RichTextBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.errorTextBox = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dispositiveID)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputFirstParam)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputSecondParam)).BeginInit();
@@ -453,20 +453,20 @@
             this.inputThirdParam.TabIndex = 48;
             this.inputThirdParam.Text = "";
             // 
-            // textBox1
+            // errorTextBox
             // 
-            this.textBox1.Location = new System.Drawing.Point(11, 443);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(926, 20);
-            this.textBox1.TabIndex = 49;
+            this.errorTextBox.Location = new System.Drawing.Point(11, 443);
+            this.errorTextBox.Name = "errorTextBox";
+            this.errorTextBox.ReadOnly = true;
+            this.errorTextBox.Size = new System.Drawing.Size(926, 20);
+            this.errorTextBox.TabIndex = 49;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(959, 466);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.errorTextBox);
             this.Controls.Add(this.inputThirdParam);
             this.Controls.Add(this.labelThirdParam);
             this.Controls.Add(this.cleanOutputButton);
@@ -562,7 +562,7 @@
         private System.Windows.Forms.Button cleanOutputButton;
         private System.Windows.Forms.Label labelThirdParam;
         private System.Windows.Forms.RichTextBox inputThirdParam;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox errorTextBox;
         public System.Windows.Forms.NumericUpDown dispositiveID;
     }
 }

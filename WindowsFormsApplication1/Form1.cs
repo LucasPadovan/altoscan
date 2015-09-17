@@ -42,6 +42,7 @@ namespace WindowsFormsApplication1
         string[] hexaOutputString;
         string[] decimalOutputString;
         string[] binaryOutputString;
+        string[] statusOutputString;
 
         int variablesLimit = 120;
 
@@ -155,7 +156,6 @@ namespace WindowsFormsApplication1
             //Mientras el hilo de configuracion este vivo 
             while (!terminate && ConfigScan.IsAlive)
             {
-                //aca deberia dividir los requests en varios.
                 int DispositiveId;
                 int FirstParam;
                 int SecondParam;
@@ -300,6 +300,20 @@ namespace WindowsFormsApplication1
             }
             toSendTextBox.Text = value;
         }
+        private void WriteStatusTextBox()
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action(WriteStatusTextBox));
+                return;
+            }
+            string value = "";
+            foreach(string status in statusOutputString)
+            {
+                value += status;
+            }
+            errorTextBox.Text = value;
+        }
         private string ReadFunctionSelected()
         {
             string returnValue = "3";
@@ -436,6 +450,7 @@ namespace WindowsFormsApplication1
                         hexaOutputString    = new string[requests.Count];
                         decimalOutputString = new string[requests.Count];
                         binaryOutputString  = new string[requests.Count];
+                        statusOutputString  = new string[requests.Count];
 
                         int counter = 0;
                         foreach (var request in requests)
@@ -448,6 +463,7 @@ namespace WindowsFormsApplication1
                             WriteOutput(hexaOutputString[counter], decimalOutputString[counter], binaryOutputString[counter]);
                             counter++;
                         }
+                        WriteStatusTextBox();
                         currentRetry = numberOfRetries;
                         break;
                     }
@@ -484,12 +500,15 @@ namespace WindowsFormsApplication1
             while (true)
             {
                 string[] portManagerResponse = portManager.ReadPort();
-                if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "")
+                if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "" && portManagerResponse[3] != "")
                 {
                     string header                = "\nResponse " + Convert.ToString(counter) + " -- ";
                     hexaOutputString[counter]    = header + portManagerResponse[0];
                     decimalOutputString[counter] = header + portManagerResponse[1];
                     binaryOutputString[counter]  = header + portManagerResponse[2];
+
+                    string status                = "Response " + Convert.ToString(counter) + " -- ";
+                    statusOutputString[counter]  = header + portManagerResponse[3] + ". ";
                     break;
                 }
                 Thread.Sleep(200);
