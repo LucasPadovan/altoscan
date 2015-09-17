@@ -44,7 +44,7 @@ namespace WindowsFormsApplication1
         string[] binaryOutputString;
         string[] statusOutputString;
 
-        int variablesLimit = 120;
+        int variablesLimit = 125;
 
         int timeout;
         int numberOfRetries;

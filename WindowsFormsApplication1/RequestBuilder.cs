@@ -180,7 +180,7 @@ namespace TransmisionDatos
             return request;
         }
 
-        private static byte[] GetCRC(byte[] message)
+        public static byte[] GetCRC(byte[] message)
         {
             //Function expects a modbus message of any length as well as a 2 byte CRC array in which to 
             //return the CRC values:
@@ -213,8 +213,8 @@ namespace TransmisionDatos
             String paddedHex = hex.PadLeft(4, '0');
             String highString = paddedHex.Substring(0, 2);
             String lowString = paddedHex.Substring(2, 2);
-            Byte highByte = Convert.ToByte(int.Parse(highString));
-            Byte lowByte = Convert.ToByte(int.Parse(lowString));
+            Byte highByte = Convert.ToByte(int.Parse(highString, System.Globalization.NumberStyles.HexNumber));
+            Byte lowByte = Convert.ToByte(int.Parse(lowString, System.Globalization.NumberStyles.HexNumber));
             Byte[] response = new byte[2];
             response[0] = highByte;
             response[1] = lowByte;

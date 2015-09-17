@@ -109,42 +109,79 @@ namespace TransmisionDatos
 
             port.Read(buffer, 0, bytes);
             port.Close();
-            foreach (var mByte in buffer)
+
+            if (checkCRC(buffer))
             {
-                if (--count > 0) { decString += Convert.ToInt16(mByte).ToString() + "-"; }
-                else { decString += Convert.ToInt16(mByte).ToString(); }
+
+                foreach (var mByte in buffer)
+                {
+                    if (--count > 0)
+                    {
+                        decString += Convert.ToInt16(mByte).ToString() + "-";
+                    }
+                    else
+                    {
+                        decString += Convert.ToInt16(mByte).ToString();
+                    }
+                }
+
+                foreach (byte mByte in buffer)
+                {
+                    if (--count2 > 0)
+                    {
+                        binString += Convert.ToString(mByte, 2).PadLeft(8, '0') + "-";
+                    }
+                    else
+                    {
+                        binString += Convert.ToString(mByte, 2).PadLeft(8, '0');
+                    }
+                }
+
+                hexaString = BitConverter.ToString(buffer);
+                decimalString = decString;
+                binaryString = binString;
+                statusString = "Message received successfully";
+
+                string statusCode = Convert.ToString(hexaString[3]) + Convert.ToString(hexaString[4]);
+
+                switch (statusCode)
+                {
+                    case "83":
+                        statusString = "Error 83, se intento leer más variables de las que existen";
+                        break;
+                    case "86":
+                        statusString = "Error 86, se intento escribir en una posición inexistente";
+                        break;
+                    case "90":
+                        statusString = "Error 90, se intento escribir en una posición inexistente";
+                        break;
+                }
+
+                //Console.WriteLine("Bytes to read: " + bytes);
+                //Console.WriteLine("Response in hexa: " + hexaString);
+                //Console.WriteLine("Response in decimal: " + decimalString);
+                //Console.WriteLine("Response in binary: " + binaryString);
+            }
+            else
+            {
+                statusString = "CRC incorrecto";
+            }
+        }
+
+        private bool checkCRC(byte[] response)
+        {
+            byte[] responseCRC = new byte[2];
+            responseCRC[0] = response[response.Length - 2];
+            responseCRC[1] = response[response.Length - 1];
+
+            byte[] calculatedCRC = RequestBuilder.GetCRC(response);
+
+            if (responseCRC[0] == calculatedCRC[0] && responseCRC[1] == calculatedCRC[1])
+            {
+                return true;
             }
 
-            foreach (byte mByte in buffer)
-            {
-                if (--count2 > 0) { binString += Convert.ToString(mByte, 2).PadLeft(8, '0') + "-"; }
-                else { binString += Convert.ToString(mByte, 2).PadLeft(8, '0'); }
-            }
-
-            hexaString = BitConverter.ToString(buffer);
-            decimalString = decString;
-            binaryString = binString;
-            statusString = "Message received successfully";
-
-            string statusCode = Convert.ToString(hexaString[3]) + Convert.ToString(hexaString[4]);
-
-            switch (statusCode)
-            {
-                case "83":
-                    statusString = "Error 83, se intento leer más variables de las que existen";
-                    break;
-                case "86":
-                    statusString = "Error 86, se intento escribir en una posición inexistente";
-                    break;
-                case "90":
-                    statusString = "Error 90, se intento escribir en una posición inexistente";
-                    break;
-            }
-
-            //Console.WriteLine("Bytes to read: " + bytes);
-            //Console.WriteLine("Response in hexa: " + hexaString);
-            //Console.WriteLine("Response in decimal: " + decimalString);
-            //Console.WriteLine("Response in binary: " + binaryString);
+            return false;
         }
     }
 }
