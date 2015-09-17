@@ -43,7 +43,7 @@ namespace WindowsFormsApplication1
         string[] decimalOutputString;
         string[] binaryOutputString;
 
-        int variablesLimit = 120;
+        int variablesLimit = 125;
 
         int timeout;
         int numberOfRetries;
