@@ -99,15 +99,17 @@ namespace TransmisionDatos
         {
             // Show all the incoming data in the port's buffer
 
-            statusString = "No data yet";
-            int bytes = port.BytesToRead;
-            byte[] buffer = new byte[bytes];
-            int count = buffer.Length;
-            int count2 = buffer.Length;
+            statusString     = "No se han recibido datos";
+            int bytes        = port.BytesToRead;
+            byte[] buffer    = new byte[bytes];
+            int count        = buffer.Length;
+            int count2       = buffer.Length;
             string decString = "";
             string binString = "";
 
             port.Read(buffer, 0, bytes);
+            port.DiscardOutBuffer();
+            port.DiscardInBuffer();
             port.Close();
 
             if (checkCRC(buffer))
@@ -137,25 +139,28 @@ namespace TransmisionDatos
                     }
                 }
 
-                hexaString = BitConverter.ToString(buffer);
+                hexaString    = BitConverter.ToString(buffer);
                 decimalString = decString;
-                binaryString = binString;
-                statusString = "Message received successfully";
+                binaryString  = binString;
+                statusString  = "Mensaje recibido satisfactoriamente.";
 
-                string statusCode = Convert.ToString(hexaString[3]) + Convert.ToString(hexaString[4]);
-
-                switch (statusCode)
-                {
-                    case "83":
-                        statusString = "Error 83, se intento leer más variables de las que existen";
-                        break;
-                    case "86":
-                        statusString = "Error 86, se intento escribir en una posición inexistente";
-                        break;
-                    case "90":
-                        statusString = "Error 90, se intento escribir en una posición inexistente";
-                        break;
-                }
+                string statusCode = Convert.ToString(binaryString[9]);
+                if (statusCode == "1")
+                    statusString = "Error en la trama.";
+                
+                //TODO: hacer una clase aparte para esto.
+                //switch (statusCode)
+                //{
+                //    case "83":
+                //        statusString = "Error 83, se intento leer más variables de las que existen";
+                //        break;
+                //    case "86":
+                //        statusString = "Error 86, se intento escribir en una posición inexistente";
+                //        break;
+                //    case "90":
+                //        statusString = "Error 90, se intento escribir en una posición inexistente";
+                //        break;
+                //}
 
                 //Console.WriteLine("Bytes to read: " + bytes);
                 //Console.WriteLine("Response in hexa: " + hexaString);

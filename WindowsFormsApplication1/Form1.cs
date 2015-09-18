@@ -308,9 +308,12 @@ namespace WindowsFormsApplication1
                 return;
             }
             string value = "";
+            int counter  = 0;
+            string header = "Response ";
             foreach(string status in statusOutputString)
             {
-                value += status;
+                value += header + Convert.ToString(counter) + "--" + status + " ";
+                counter++;
             }
             errorTextBox.Text = value;
         }
@@ -460,7 +463,12 @@ namespace WindowsFormsApplication1
                             //Aca leemos el buffer todo el tiempo, hasta que algo vuelve
                             readPortBuffer(portManager, counter);
                             //Cuando tiene las variables completas, escribe el formulario
-                            WriteOutput(hexaOutputString[counter], decimalOutputString[counter], binaryOutputString[counter]);
+                            string header = "\nResponse " + Convert.ToString(counter) + " -- ";
+                            WriteOutput(
+                                header + hexaOutputString[counter],
+                                header + decimalOutputString[counter],
+                                header + binaryOutputString[counter]
+                            );
                             counter++;
                         }
                         WriteStatusTextBox();
@@ -502,14 +510,19 @@ namespace WindowsFormsApplication1
                 string[] portManagerResponse = portManager.ReadPort();
                 if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "" && portManagerResponse[3] != "")
                 {
-                    string header                = "\nResponse " + Convert.ToString(counter) + " -- ";
-                    hexaOutputString[counter]    = header + portManagerResponse[0];
-                    decimalOutputString[counter] = header + portManagerResponse[1];
-                    binaryOutputString[counter]  = header + portManagerResponse[2];
-
-                    string status                = "Response " + Convert.ToString(counter) + " -- ";
-                    statusOutputString[counter]  = header + portManagerResponse[3] + ". ";
-                    break;
+                    hexaOutputString[counter]    = portManagerResponse[0];
+                    decimalOutputString[counter] = portManagerResponse[1];
+                    binaryOutputString[counter]  = portManagerResponse[2];
+                    statusOutputString[counter]  = portManagerResponse[3];
+                    
+                    if (counter == 0)
+                    {
+                        break;
+                    }
+                    if (counter > 0 && hexaOutputString[counter - 1] != hexaOutputString[counter])
+                    {
+                        break;
+                    }
                 }
                 Thread.Sleep(200);
             }

@@ -70,6 +70,7 @@
             this.labelThirdParam = new System.Windows.Forms.Label();
             this.inputThirdParam = new System.Windows.Forms.RichTextBox();
             this.errorTextBox = new System.Windows.Forms.TextBox();
+            this.tableOutput = new System.Windows.Forms.RichTextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dispositiveID)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputFirstParam)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputSecondParam)).BeginInit();
@@ -138,7 +139,7 @@
             // 
             this.decimalOutput.Location = new System.Drawing.Point(601, 28);
             this.decimalOutput.Name = "decimalOutput";
-            this.decimalOutput.Size = new System.Drawing.Size(340, 120);
+            this.decimalOutput.Size = new System.Drawing.Size(336, 120);
             this.decimalOutput.TabIndex = 8;
             this.decimalOutput.Text = "";
             // 
@@ -381,6 +382,11 @@
             // inputFirstParam
             // 
             this.inputFirstParam.Location = new System.Drawing.Point(378, 111);
+            this.inputFirstParam.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
             this.inputFirstParam.Name = "inputFirstParam";
             this.inputFirstParam.Size = new System.Drawing.Size(124, 20);
             this.inputFirstParam.TabIndex = 42;
@@ -461,11 +467,20 @@
             this.errorTextBox.Size = new System.Drawing.Size(926, 20);
             this.errorTextBox.TabIndex = 49;
             // 
+            // tableOutput
+            // 
+            this.tableOutput.Location = new System.Drawing.Point(947, 28);
+            this.tableOutput.Name = "tableOutput";
+            this.tableOutput.Size = new System.Drawing.Size(224, 368);
+            this.tableOutput.TabIndex = 50;
+            this.tableOutput.Text = "";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(959, 466);
+            this.ClientSize = new System.Drawing.Size(1183, 466);
+            this.Controls.Add(this.tableOutput);
             this.Controls.Add(this.errorTextBox);
             this.Controls.Add(this.inputThirdParam);
             this.Controls.Add(this.labelThirdParam);
@@ -564,6 +579,7 @@
         private System.Windows.Forms.RichTextBox inputThirdParam;
         private System.Windows.Forms.TextBox errorTextBox;
         public System.Windows.Forms.NumericUpDown dispositiveID;
+        private System.Windows.Forms.RichTextBox tableOutput;
     }
 }
 
