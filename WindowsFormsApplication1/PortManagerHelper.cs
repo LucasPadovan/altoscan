@@ -106,5 +106,16 @@ namespace TransmisionDatos
             //Pone la request en el listado con la direccion inicial, cantidad de registros y los valores de las variables
             requests.Add(RequestBuilder.BuildWriteMultipleRegistersRequest(DispositiveId, FirstParam, SecondParam, values));
         }
+
+        public string generateRequestsString(List<byte[]> requests)
+        {
+            string requestsString = "";
+            foreach (var request in requests)
+            {
+                if (requestsString != "") { requestsString += ", "; }
+                requestsString += BitConverter.ToString(request);
+            }
+            return requestsString;
+        }
     }
 }

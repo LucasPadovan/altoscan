@@ -118,23 +118,13 @@ namespace WindowsFormsApplication1
             cboHandShaking.Text = cboHandShaking.Items[0].ToString();
 
             //Function to implement
-            functionToImplement.Items.Add(03);
-            functionToImplement.Items.Add(06);
-            functionToImplement.Items.Add(16);
-            functionToImplement.Items.ToString();
+            inputFunction.Items.Add(03);
+            inputFunction.Items.Add(06);
+            inputFunction.Items.Add(16);
+            inputFunction.Items.ToString();
             //get the first item print it in the text 
-            functionToImplement.Text = functionToImplement.Items[0].ToString();
+            inputFunction.Text = inputFunction.Items[0].ToString();
 
-        }
-
-        //Listener que verifica que haya datos en el buffer
-        private void port_DataReceived_1(object sender, SerialDataReceivedEventArgs e)
-        {
-            InputData = ComPort.ReadExisting();
-            if (InputData != String.Empty)
-            {
-                this.BeginInvoke(new SetTextCallback(WriteConfig), new object[] { InputData });
-            }
         }
 
         //Inicia el hilo de escaneo de configuración desde form
@@ -143,6 +133,7 @@ namespace WindowsFormsApplication1
             ConfigScan = new Thread(ReadConfig);
             ConfigScan.Start();
         }
+
         //Leer configuracion del form
         private void ReadConfig() {
             //Mientras el hilo de configuracion este vivo 
@@ -152,31 +143,20 @@ namespace WindowsFormsApplication1
                 int FirstParam;
                 int SecondParam;
 
-                string   stringy          = ReadTextArea();
-                string[] ThirdParam       = stringy.Split(",".ToArray());
+                string   textAreaString   = ReadTextArea();
+                string[] ThirdParam       = textAreaString.Split(",".ToArray());
                 string   FunctionSelected = ReadFunctionSelected();
 
-                //deberia usar una expresion regular para sacar todo lo que sea un "-"
-                bool dispositiveHasValidText = dispositiveID.Text    == "" || dispositiveID.Text    == "-";
-                bool firstParamHasValidText  = inputFirstParam.Text  == "" || inputFirstParam.Text  == "-";
-                bool secondParamHasValidText = inputSecondParam.Text == "" || inputSecondParam.Text == "-";
-
-                //con esto evitamos que se traten de parsear valores que no se puedan hacer int. Podria usar un TryParse o algo asi tambien.
-                if (dispositiveHasValidText) { DispositiveId = 0; }
-                else                         { DispositiveId = int.Parse(dispositiveID.Text); }
-
-                if (firstParamHasValidText)  { FirstParam = 0; }
-                else                         { FirstParam = int.Parse(inputFirstParam.Text); }
-
-                if (secondParamHasValidText) { SecondParam = 0; }
-                else                         { SecondParam = int.Parse(inputSecondParam.Text); }
-
+                //Usamos una funcion para convertir a int los valores del formulario evitando valores no deseados.
+                DispositiveId = parseToInt(inputDispositiveId.Text);
+                FirstParam    = parseToInt(inputFirstParam.Text);
+                SecondParam   = parseToInt(inputSecondParam.Text);
+                
                 //Lista para agregar request en caso de que sea necesario mas de una request
                 requests = new List<byte[]>();
 
                 switch (FunctionSelected) {
                     case "3":
-
                         //Habilita los parametros que la funcion 3 necesita
                         EnableInputFirstParam(true); //Dir inicial
                         EnableInputSecondParam(true); //Cantidad de variables
@@ -188,8 +168,6 @@ namespace WindowsFormsApplication1
                         break;
 
                     case "6":
-
-
                         //Habilito los parametros para la funcion 6
                         EnableInputFirstParam(true); //Dir inicial
                         EnableInputSecondParam(false); //Cantidad de variables
@@ -201,8 +179,6 @@ namespace WindowsFormsApplication1
                         break;
 
                     case "16":
-
-
                         //Habilitamos todos los parametros para funcion 16, pos inicial, cantidad de vars, valores de las vars-
                         EnableInputFirstParam(true); //Dir inicial
                         EnableInputSecondParam(true); //Cantidad de variables
@@ -215,104 +191,22 @@ namespace WindowsFormsApplication1
                 }
 
                 //Arma la string con las request que se van a mostrar en el form, separadas por comas
-                string TextToWrite = "";
-                foreach (var request in requests)
-                {
-                    if (TextToWrite != "") { TextToWrite += ", "; }
-                    TextToWrite += BitConverter.ToString(request);
-                }
-                
+                string TextToWrite = portManagerHelper.generateRequestsString(requests);
                 //Escribe en el form la/s request/s armada/s
-                WriteConfig(TextToWrite);
+                WriteToSendTextBox(TextToWrite);
 
                 Thread.Sleep(200);
             }
         }
-        private void WriteConfig(string value)
+
+        //Listener que verifica que haya datos en el buffer
+        private void port_DataReceived_1(object sender, SerialDataReceivedEventArgs e)
         {
-            if (InvokeRequired)
+            InputData = ComPort.ReadExisting();
+            if (InputData != String.Empty)
             {
-                this.Invoke(new Action<string>(WriteConfig), new object[] { value });
-                return;
+                this.BeginInvoke(new SetTextCallback(WriteToSendTextBox), new object[] { InputData });
             }
-            toSendTextBox.Text = value;
-        }
-        private void WriteStatusTextBox()
-        {
-            if (InvokeRequired)
-            {
-                this.Invoke(new Action(WriteStatusTextBox));
-                return;
-            }
-            string value = "";
-            int counter  = 0;
-            string header = "Response ";
-            foreach(string status in statusOutputString)
-            {
-                value += header + Convert.ToString(counter) + "--" + status + " ";
-                counter++;
-            }
-            errorTextBox.Text = value;
-        }
-        private string ReadFunctionSelected()
-        {
-            string returnValue = "3";
-            this.Invoke((MethodInvoker)delegate()
-            {
-                returnValue = functionToImplement.Text;
-            });
-            return returnValue;
-        }
-        private string ReadTextArea()
-        {
-            string returnValue = "0";
-            this.Invoke((MethodInvoker)delegate()
-            {
-                returnValue = inputThirdParam.Text;
-            });
-            if (returnValue == "")
-            {
-                returnValue = "0";
-            }
-            return returnValue;
-        }
-        private void EnableInputFirstParam(bool value)
-        {
-            if (InvokeRequired)
-            {
-                this.Invoke(new Action<bool>(EnableInputFirstParam), new object[] { value });
-                return;
-            }
-            inputFirstParam.Enabled = value;
-        }
-        private void EnableInputSecondParam(bool value)
-        {
-            if (InvokeRequired)
-            {
-                this.Invoke(new Action<bool>(EnableInputSecondParam), new object[] { value });
-                return;
-            }
-            inputSecondParam.Enabled = value;
-        }
-        private void EnableInputThirdParam(bool value)
-        {
-            if (InvokeRequired)
-            {
-                this.Invoke(new Action<bool>(EnableInputThirdParam), new object[] { value });
-                return;
-            }
-            inputThirdParam.Enabled = value;
-        }
-        public void WriteOutput(string hexaValue, string decimalValue, string binaryValue)
-        {
-            if (InvokeRequired)
-            {
-                this.Invoke(new Action<string, string, string>(WriteOutput), new object[] { hexaValue, decimalValue, binaryValue });
-                return;
-            }
-            decimalOutput.Text += decimalValue;
-            hexaOutput.Text    += hexaValue;
-            binOutput.Text     += binaryValue;
         }
 
 
@@ -353,12 +247,13 @@ namespace WindowsFormsApplication1
         private void initializePortManager()
         {
             //String portName, int baudRate, Parity parity, int dataBits, StopBits stopBits
-            string portName = cboPorts.Text;
-            string parityName = cboParity.Text;
+            string portName     = cboPorts.Text;
+            string parityName   = cboParity.Text;
             string stopBitsName = cboStopBits.Text;
 
             int baudRate = int.Parse(cboBaudRate.Text);
             int dataBits = int.Parse(cboDataBits.Text);
+
             numberOfRetries = int.Parse(numberOfRetriesInput.Text);
             timeout = int.Parse(timeoutInput.Text);
 
@@ -454,6 +349,110 @@ namespace WindowsFormsApplication1
                     currentRetry++;
                 }
             }
+        }
+
+        // Methods to write the fields from another thread
+
+        private void WriteToSendTextBox(string value)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action<string>(WriteToSendTextBox), new object[] { value });
+                return;
+            }
+            toSendTextBox.Text = value;
+        }
+        private void WriteStatusTextBox()
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action(WriteStatusTextBox));
+                return;
+            }
+            string value = "";
+            int counter = 0;
+            string header = "Response ";
+            foreach (string status in statusOutputString)
+            {
+                value += header + Convert.ToString(counter) + "--" + status + " ";
+                counter++;
+            }
+            errorTextBox.Text = value;
+        }
+        private string ReadFunctionSelected()
+        {
+            string returnValue = "3";
+            this.Invoke((MethodInvoker)delegate()
+            {
+                returnValue = inputFunction.Text;
+            });
+            return returnValue;
+        }
+        private string ReadTextArea()
+        {
+            string returnValue = "0";
+            this.Invoke((MethodInvoker)delegate()
+            {
+                returnValue = inputThirdParam.Text;
+            });
+            if (returnValue == "")
+            {
+                returnValue = "0";
+            }
+            return returnValue;
+        }
+        private void EnableInputFirstParam(bool value)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action<bool>(EnableInputFirstParam), new object[] { value });
+                return;
+            }
+            inputFirstParam.Enabled = value;
+        }
+        private void EnableInputSecondParam(bool value)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action<bool>(EnableInputSecondParam), new object[] { value });
+                return;
+            }
+            inputSecondParam.Enabled = value;
+        }
+        private void EnableInputThirdParam(bool value)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action<bool>(EnableInputThirdParam), new object[] { value });
+                return;
+            }
+            inputThirdParam.Enabled = value;
+        }
+        public void WriteOutput(string hexaValue, string decimalValue, string binaryValue)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action<string, string, string>(WriteOutput), new object[] { hexaValue, decimalValue, binaryValue });
+                return;
+            }
+            decimalOutput.Text += decimalValue;
+            hexaOutput.Text += hexaValue;
+            binOutput.Text += binaryValue;
+        }
+
+        //Parsers
+        private int parseToInt(string text)
+        {
+            //deberia usar una expresion regular para sacar todo lo que sea un "-"
+            bool textIsInvalid = text == "" || text == "-";
+
+            int response = 0;
+            
+            //con esto evitamos que se traten de parsear valores que no se puedan hacer int. Podria usar un TryParse o algo asi tambien.
+            if (textIsInvalid) response = 0;
+            else               response = int.Parse(text);
+
+            return response;
         }
     }
 }
