@@ -16,3 +16,6 @@ E:\SebA\Facultad y Cursos\[2015] Transmision de datos\altoscan\WindowsFormsAppli
 E:\SebA\Facultad y Cursos\[2015] Transmision de datos\altoscan\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Form1.resources
 E:\SebA\Facultad y Cursos\[2015] Transmision de datos\altoscan\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Properties.Resources.resources
 E:\SebA\Facultad y Cursos\[2015] Transmision de datos\altoscan\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.csproj.GenerateResource.Cache
+C:\Users\Ruso\Documents\GitHub\altoscan\WindowsFormsApplication1\bin\Debug\WindowsFormsApplication1.exe.config
+C:\Users\Ruso\Documents\GitHub\altoscan\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.exe
+C:\Users\Ruso\Documents\GitHub\altoscan\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.pdb
