@@ -50,7 +50,7 @@
             this.labelSecond = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.label7 = new System.Windows.Forms.Label();
-            this.functionToImplement = new System.Windows.Forms.ComboBox();
+            this.inputFunction = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
             this.label9 = new System.Windows.Forms.Label();
             this.binOutput = new System.Windows.Forms.RichTextBox();
@@ -61,7 +61,7 @@
             this.label14 = new System.Windows.Forms.Label();
             this.stopQuery = new System.Windows.Forms.Button();
             this.toSendTextBox = new System.Windows.Forms.TextBox();
-            this.dispositiveID = new System.Windows.Forms.NumericUpDown();
+            this.inputDispositiveId = new System.Windows.Forms.NumericUpDown();
             this.inputFirstParam = new System.Windows.Forms.NumericUpDown();
             this.inputSecondParam = new System.Windows.Forms.NumericUpDown();
             this.numberOfRetriesInput = new System.Windows.Forms.NumericUpDown();
@@ -70,7 +70,8 @@
             this.labelThirdParam = new System.Windows.Forms.Label();
             this.inputThirdParam = new System.Windows.Forms.RichTextBox();
             this.errorTextBox = new System.Windows.Forms.TextBox();
-            ((System.ComponentModel.ISupportInitialize)(this.dispositiveID)).BeginInit();
+            this.tableOutput = new System.Windows.Forms.RichTextBox();
+            ((System.ComponentModel.ISupportInitialize)(this.inputDispositiveId)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputFirstParam)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputSecondParam)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numberOfRetriesInput)).BeginInit();
@@ -138,7 +139,7 @@
             // 
             this.decimalOutput.Location = new System.Drawing.Point(601, 28);
             this.decimalOutput.Name = "decimalOutput";
-            this.decimalOutput.Size = new System.Drawing.Size(340, 120);
+            this.decimalOutput.Size = new System.Drawing.Size(336, 120);
             this.decimalOutput.TabIndex = 8;
             this.decimalOutput.Text = "";
             // 
@@ -269,13 +270,13 @@
             this.label7.TabIndex = 23;
             this.label7.Text = "Reintentos";
             // 
-            // functionToImplement
+            // inputFunction
             // 
-            this.functionToImplement.FormattingEnabled = true;
-            this.functionToImplement.Location = new System.Drawing.Point(378, 72);
-            this.functionToImplement.Name = "functionToImplement";
-            this.functionToImplement.Size = new System.Drawing.Size(124, 21);
-            this.functionToImplement.TabIndex = 27;
+            this.inputFunction.FormattingEnabled = true;
+            this.inputFunction.Location = new System.Drawing.Point(378, 72);
+            this.inputFunction.Name = "inputFunction";
+            this.inputFunction.Size = new System.Drawing.Size(124, 21);
+            this.inputFunction.TabIndex = 27;
             // 
             // label8
             // 
@@ -366,13 +367,13 @@
             this.toSendTextBox.Size = new System.Drawing.Size(491, 20);
             this.toSendTextBox.TabIndex = 40;
             // 
-            // dispositiveID
+            // inputDispositiveId
             // 
-            this.dispositiveID.Location = new System.Drawing.Point(378, 27);
-            this.dispositiveID.Name = "dispositiveID";
-            this.dispositiveID.Size = new System.Drawing.Size(124, 20);
-            this.dispositiveID.TabIndex = 41;
-            this.dispositiveID.Value = new decimal(new int[] {
+            this.inputDispositiveId.Location = new System.Drawing.Point(378, 27);
+            this.inputDispositiveId.Name = "inputDispositiveId";
+            this.inputDispositiveId.Size = new System.Drawing.Size(124, 20);
+            this.inputDispositiveId.TabIndex = 41;
+            this.inputDispositiveId.Value = new decimal(new int[] {
             1,
             0,
             0,
@@ -381,6 +382,11 @@
             // inputFirstParam
             // 
             this.inputFirstParam.Location = new System.Drawing.Point(378, 111);
+            this.inputFirstParam.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
             this.inputFirstParam.Name = "inputFirstParam";
             this.inputFirstParam.Size = new System.Drawing.Size(124, 20);
             this.inputFirstParam.TabIndex = 42;
@@ -461,11 +467,20 @@
             this.errorTextBox.Size = new System.Drawing.Size(926, 20);
             this.errorTextBox.TabIndex = 49;
             // 
+            // tableOutput
+            // 
+            this.tableOutput.Location = new System.Drawing.Point(947, 28);
+            this.tableOutput.Name = "tableOutput";
+            this.tableOutput.Size = new System.Drawing.Size(224, 368);
+            this.tableOutput.TabIndex = 50;
+            this.tableOutput.Text = "";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(959, 466);
+            this.ClientSize = new System.Drawing.Size(1183, 466);
+            this.Controls.Add(this.tableOutput);
             this.Controls.Add(this.errorTextBox);
             this.Controls.Add(this.inputThirdParam);
             this.Controls.Add(this.labelThirdParam);
@@ -474,7 +489,7 @@
             this.Controls.Add(this.numberOfRetriesInput);
             this.Controls.Add(this.inputSecondParam);
             this.Controls.Add(this.inputFirstParam);
-            this.Controls.Add(this.dispositiveID);
+            this.Controls.Add(this.inputDispositiveId);
             this.Controls.Add(this.toSendTextBox);
             this.Controls.Add(this.stopQuery);
             this.Controls.Add(this.label14);
@@ -485,7 +500,7 @@
             this.Controls.Add(this.binOutput);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.label8);
-            this.Controls.Add(this.functionToImplement);
+            this.Controls.Add(this.inputFunction);
             this.Controls.Add(this.label7);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.labelSecond);
@@ -510,7 +525,7 @@
             this.Controls.Add(this.cboPorts);
             this.Name = "Form1";
             this.Text = "Form1";
-            ((System.ComponentModel.ISupportInitialize)(this.dispositiveID)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.inputDispositiveId)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputFirstParam)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputSecondParam)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numberOfRetriesInput)).EndInit();
@@ -544,7 +559,7 @@
         private System.Windows.Forms.Label labelSecond;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label7;
-        private System.Windows.Forms.ComboBox functionToImplement;
+        private System.Windows.Forms.ComboBox inputFunction;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.RichTextBox binOutput;
@@ -563,7 +578,8 @@
         private System.Windows.Forms.Label labelThirdParam;
         private System.Windows.Forms.RichTextBox inputThirdParam;
         private System.Windows.Forms.TextBox errorTextBox;
-        public System.Windows.Forms.NumericUpDown dispositiveID;
+        public System.Windows.Forms.NumericUpDown inputDispositiveId;
+        private System.Windows.Forms.RichTextBox tableOutput;
     }
 }
 
