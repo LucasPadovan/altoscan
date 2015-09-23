@@ -1,3 +1,8 @@
 WindowsFormsApplication1/bin/*
 
 WindowsFormsApplication1/obj/*
+*.csproj
+*.exe
+WindowsFormsApplication1/bin/Debug/WindowsFormsApplication1.pdb
+*.Cache
+WindowsFormsApplication1/obj/Debug/WindowsFormsApplication1.csproj.FileListAbsolute.txt

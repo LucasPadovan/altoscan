@@ -53,7 +53,7 @@ namespace TransmisionDatos
             request[6] = crc[0];
             request[7] = crc[1];
 
-            Console.WriteLine("Request: " + BitConverter.ToString(request));
+            //Console.WriteLine("Request: " + BitConverter.ToString(request));
 
             return request;
         }
@@ -100,7 +100,7 @@ namespace TransmisionDatos
             request[6] = crc[0];
             request[7] = crc[1];
 
-            Console.WriteLine("Request: " + BitConverter.ToString(request));
+            //Console.WriteLine("Request: " + BitConverter.ToString(request));
 
             return request;
         }
@@ -142,9 +142,13 @@ namespace TransmisionDatos
                 request[5] = hexLength[1];
             }
 
-            //Cantidad de bytes que corresponden a los registros a escribir
-            request[6] = Convert.ToByte(registerQuantity*2);
-
+            if(registerQuantity<=255)
+                //Cantidad de bytes que corresponden a los registros a escribir
+                request[6] = Convert.ToByte(registerQuantity*2);
+            else
+            {
+                // TODO
+            }
             //Posicion donde vamos a empezar a escribir valores a la request
             int valuesStartingByte = 7; 
             //Desde 0 hasta la cantidad de registros
@@ -175,7 +179,7 @@ namespace TransmisionDatos
             request[requestLength-2] = crc[0];
             request[requestLength-1] = crc[1];
 
-            Console.WriteLine("Request: " + BitConverter.ToString(request));
+            //Console.WriteLine("Request: " + BitConverter.ToString(request));
 
             return request;
         }
