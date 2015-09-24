@@ -6,3 +6,7 @@ WindowsFormsApplication1/obj/*
 WindowsFormsApplication1/bin/Debug/WindowsFormsApplication1.pdb
 *.Cache
 WindowsFormsApplication1/obj/Debug/WindowsFormsApplication1.csproj.FileListAbsolute.txt
+*.pdb
+*.exe
+WindowsFormsApplication1/obj/Debug/WindowsFormsApplication1.csproj.GenerateResource.Cache
+*.pdb

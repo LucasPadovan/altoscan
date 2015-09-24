@@ -212,7 +212,7 @@ namespace TransmisionDatos
             return CRC;
         }
 
-        private static byte[] StringToByteArray(string hex)
+        protected static byte[] StringToByteArray(string hex)
         {
             String paddedHex = hex.PadLeft(4, '0');
             String highString = paddedHex.Substring(0, 2);
