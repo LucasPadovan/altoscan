@@ -3,14 +3,52 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using WindowsFormsApplication1;
 using TransmisionDatos;
 
 namespace TransmisionDatos
 {
-    public class TCPRequestBuilder : RequestBuilder
+    public class TCPRequestBuilder : GenericBuilder
     {
-        private static byte[] request;
+        private byte[] _tcpRequest;
+        private byte[] _tcpHeader;
+        private static int _requestIdentifier = 1;
 
+        public override byte[] BuildReadRegisterRequest(int deviceId, int startAddress, int registerQuantity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override byte[] BuildWriteRegisterRequest(int deviceId, int registerAddress, int registerValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override byte[] BuildWriteMultipleRegistersRequest(int deviceId, int startingAddress, int registerQuantity, int[] registersValues)
+        {
+            throw new NotImplementedException();
+        }
+
+        private byte[] buildTcpHeader(int followingBytesLength, int deviceId)
+        {
+            //Convertimos el identificador de la request a hexa
+            byte[] requestId = RequestUtils.ConvertToBytes(_requestIdentifier);
+            _tcpHeader[0] = requestId[0];
+            _tcpHeader[1] = requestId[1];
+
+            //Aumentamos el identificador de la request
+            _requestIdentifier++;
+
+            //Protocol Identifier
+            _tcpHeader[2] = 0;
+            _tcpHeader[3] = 0;
+
+            //Number of following bytes = 6
+            _tcpHeader[5] = 0;
+            _tcpHeader[6] = Convert.ToByte(followingBytesLength + 1);
+
+
+        }
         public static byte[] BuildTCPReadRegisterRequest(int identifier, int deviceId, int startAddress,
             int registerQuantity)
         {
@@ -53,6 +91,5 @@ namespace TransmisionDatos
             return request;
 
         }
-
-    }
+     }
 }

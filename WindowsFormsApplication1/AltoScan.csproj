@@ -55,6 +55,9 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestBuilder.cs" />
+    <Compile Include="GenericBuilder.cs" />
+    <Compile Include="RequestUtils.cs" />
+    <Compile Include="SerialPortRequestBuilder.cs" />
     <Compile Include="TCPRequestBuilder.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
