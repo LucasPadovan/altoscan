@@ -50,6 +50,26 @@ namespace WindowsFormsApplication1
 
         PortManagerHelper portManagerHelper = new PortManagerHelper();
 
+        public delegate void DataReceived(string[] parameter);
+
+        public event DataReceived PortDataReceived;
+
+
+        public void OnPortDataReceived(string[] parameter)
+        {
+            var handler = PortDataReceived;
+            if (handler != null) 
+                handler(parameter);
+
+            this.Invoke((MethodInvoker)delegate()
+            {
+                this.hexaOutput.Text += "\n" + parameter[0];
+                this.decimalOutput.Text += "\n" + parameter[1];
+                this.binOutput.Text += "\n" + parameter[2];
+                //this.status.Text = parameter[3];
+            }); 
+        }
+
         public Form1()
         {
             InitializeComponent();
@@ -294,7 +314,7 @@ namespace WindowsFormsApplication1
                     break;
             }
 
-            portManager = new PortManager(portName, baudRate, parity, dataBits, stopBits);
+            portManager = new PortManager(portName, baudRate, parity, dataBits, stopBits,this);
         }
 
         private void sendRequestsToPort()
@@ -454,5 +474,7 @@ namespace WindowsFormsApplication1
 
             return response;
         }
+
+        
     }
 }
