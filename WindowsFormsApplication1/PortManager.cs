@@ -25,7 +25,7 @@ namespace TransmisionDatos
         private string hexaString = "";
         private string decimalString = "";
         private string binaryString = "";
-        private string statusString = "No data yet";
+        private string statusString = "";
 
         public PortManager(String portName, int baudRate, Parity parity, int dataBits, StopBits stopBits)
         {
@@ -52,12 +52,13 @@ namespace TransmisionDatos
             }
         }
 
-        public void OpenPort()
+        public void OpenPort(int timeout)
         {
             if (!port.IsOpen)
             {
                 port.Open();
             }
+            port.WriteTimeout = timeout;
         }
         public void ClosePort()
         {
@@ -65,12 +66,10 @@ namespace TransmisionDatos
         }
 
         //Verifica que el puerto este abierto (lo abre si esta cerrado) 
-        public void Write(byte[] request, int offset, int count)
+        public void Write(byte[] request, int offset, int count, int timeout)
         {
-            if (!port.IsOpen)
-            { port.Open(); }
-            //port.ReadTimeout = 200;
-            //port.WriteTimeout = 200;
+            OpenPort(timeout);
+          
             //request, 0, cantidad de bytes de la request
             try
             {
@@ -79,6 +78,8 @@ namespace TransmisionDatos
             catch (TimeoutException e)
             {
                 Console.WriteLine(e.Message);
+                port.Close();
+                throw new Exception(); //TODO: Reiniciar hilos necesarios. (Utilizar evento para llamar metodos del form)
             }
 
         }
@@ -126,7 +127,7 @@ namespace TransmisionDatos
                         decString += Convert.ToInt16(mByte).ToString();
                     }
                 }
-
+                //todo
                 foreach (byte mByte in buffer)
                 {
                     if (--count2 > 0)
@@ -144,6 +145,7 @@ namespace TransmisionDatos
                 binaryString  = binString;
                 statusString  = "Mensaje recibido satisfactoriamente.";
 
+                //TODO ADD EVENT
                 string statusCode = Convert.ToString(binaryString[9]);
                 if (statusCode == "1")
                     statusString = "Error en la trama.";

@@ -19,15 +19,7 @@ namespace WindowsFormsApplication1
 
         SerialPort ComPort = new SerialPort();
 
-        internal delegate void SerialDataReceivedEventHandlerDelegate(
-                 object sender, SerialDataReceivedEventArgs e);
-
-        internal delegate void SerialPinChangedEventHandlerDelegate(
-                 object sender, SerialPinChangedEventArgs e);
-
         delegate void SetTextCallback(string text);
-
-        string InputData = String.Empty;
 
         Thread ConfigScan;
 
@@ -202,7 +194,7 @@ namespace WindowsFormsApplication1
         //Listener que verifica que haya datos en el buffer
         private void port_DataReceived_1(object sender, SerialDataReceivedEventArgs e)
         {
-            InputData = ComPort.ReadExisting();
+            string InputData = ComPort.ReadExisting();
             if (InputData != String.Empty)
             {
                 this.BeginInvoke(new SetTextCallback(WriteToSendTextBox), new object[] { InputData });
@@ -231,6 +223,7 @@ namespace WindowsFormsApplication1
             decimalOutput.Text = "";
             hexaOutput.Text    = "";
             binOutput.Text     = "";
+            errorTextBox.Text  = "";
         }
 
         private void TerminateThreads(object sender, EventArgs e)
@@ -241,7 +234,13 @@ namespace WindowsFormsApplication1
 
         private void readPortBuffer(PortManager portManager, int counter)
         {
+            try { 
             portManagerHelper.readPortManagerBuffer(portManager, counter, hexaOutputString, decimalOutputString, binaryOutputString, statusOutputString);
+            }
+            catch (Exception e)
+            {
+                Console.Write(e);
+            }
         }
 
         private void initializePortManager()
@@ -300,53 +299,47 @@ namespace WindowsFormsApplication1
         private void sendRequestsToPort()
         {
             //Por cada intento
-            for (int currentRetry = 0; currentRetry < numberOfRetries; currentRetry++)
+            for (int currentRetry = 1; currentRetry <= numberOfRetries; currentRetry++)
             {
-                //Calculamos inicio del intento
-                DateTime initialTime = DateTime.Now;
-                var differenceInMilliseconds = (DateTime.Now - initialTime).TotalMilliseconds;
-
-                //Mientras no se pase del timeout del intento
-                while (differenceInMilliseconds < timeout)
+                try
                 {
-                    //Actualizamos diferencia entre el inicio y este momento de ejecucion
-                    differenceInMilliseconds = (DateTime.Now - initialTime).TotalMilliseconds;
-                    try
-                    {
-                        //Abrimos el puerto
-                        portManager.OpenPort();
-                        //Inicializamos las variables del formulario como arrays de string de tamaño = cant de requests
-                        hexaOutputString = new string[requests.Count];
-                        decimalOutputString = new string[requests.Count];
-                        binaryOutputString = new string[requests.Count];
-                        statusOutputString = new string[requests.Count];
+                    //Abrimos el puerto
+                    portManager.OpenPort(timeout);
+                    //Inicializamos las variables del formulario como arrays de string de tamaño = cant de requests
+                    hexaOutputString    = new string[requests.Count];
+                    decimalOutputString = new string[requests.Count];
+                    binaryOutputString  = new string[requests.Count];
+                    statusOutputString  = new string[requests.Count];
 
-                        int counter = 0;
-                        foreach (var request in requests)
+                    int counter = 0;
+                    foreach (var request in requests)
+                    {
+                        //Tenemos que evitar hacer un request innecesario, si el primero falló, no seguimos para evitar quedar leyendo una respuesta que nunca llegará.
+                        if (counter == 0 || (statusOutputString[counter - 1] != null && statusOutputString[counter - 1] != "Error en la trama."))
                         {
-                            //Tenemos que evitar hacer un request innecesario, si el primero falló, no seguimos para evitar quedar leyendo una respuesta que nunca llegará.
-                            if (counter == 0 || (statusOutputString[counter - 1] != null && statusOutputString[counter - 1] != "Error en la trama."))
-                            {
-                                //si el id de dispositivo o algo esta mal, al querer escribir se detona
-                                portManager.Write(request, 0, request.Length);
-                                //Aca leemos el buffer todo el tiempo, hasta que algo vuelve
-                                readPortBuffer(portManager, counter);
-                                //Cuando tiene las variables completas, escribe el formulario
-                                string header = "\nResponse " + Convert.ToString(counter) + " -- ";
-                                WriteOutput(
-                                    header + hexaOutputString[counter],
-                                    header + decimalOutputString[counter],
-                                    header + binaryOutputString[counter]
-                                );
-                                counter++;
-                            }
+                            //si el id de dispositivo o algo esta mal, al querer escribir se detona
+                            portManager.Write(request, 0, request.Length, timeout);
+                            //Aca leemos el buffer todo el tiempo, hasta que algo vuelve
+                            readPortBuffer(portManager, counter);
+                            //Cuando tiene las variables completas, escribe el formulario
+                            string header = "\nResponse " + Convert.ToString(counter) + " -- ";
+                            WriteOutput(
+                                header + hexaOutputString[counter],
+                                header + decimalOutputString[counter],
+                                header + binaryOutputString[counter]
+                            );
+                            counter++;
                         }
-                        WriteStatusTextBox();
-                        currentRetry = numberOfRetries;
-                        break;
                     }
-                    catch { }
-                    currentRetry++;
+                    WriteStatusTextBox();
+                    currentRetry = numberOfRetries;
+                    break;
+                }
+                catch (Exception e)
+                {
+                    statusOutputString = new string[1];
+                    statusOutputString[0] = "Intento " + Convert.ToString(currentRetry) + " - Error de timeout";
+                    WriteStatusTextBox();
                 }
             }
         }

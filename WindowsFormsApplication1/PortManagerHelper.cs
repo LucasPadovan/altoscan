@@ -19,7 +19,7 @@ namespace TransmisionDatos
         }
         public void readPortManagerBuffer(PortManager portManager, int counter, string[] hexaOutputString, string[] decimalOutputString, string[] binaryOutputString, string[] statusOutputString)
         {
-            while (true)
+            while (true) //TODO Cambiar por evento
             {
                 string[] portManagerResponse = portManager.ReadPort();
                 if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "" && portManagerResponse[3] != "")
@@ -33,6 +33,19 @@ namespace TransmisionDatos
                     if (counter == 0 || (counter > 0 && hexaOutputString[counter - 1] != hexaOutputString[counter]))
                         break;
                 }
+                else
+                {
+                    if (portManagerResponse[3] == "CRC incorrecto")
+                    {
+                        statusOutputString[counter] = " CRC incorrecto";
+                        break;
+                    }
+                    if (portManagerResponse[3] == "No data yet")
+                    {
+                        statusOutputString[counter] = " No data yet";
+                        break;
+                    }
+                }
                 Thread.Sleep(200);
             }
         }
@@ -40,10 +53,10 @@ namespace TransmisionDatos
         public void generateFunction3Requests(List<byte[]> requests, int DispositiveId, int FirstParam, int SecondParam, int variablesLimit)
         {
             //Calculamos cantidad request y el tamaño de la ultima request
-            int variablesLeft    = SecondParam % variablesLimit;
+            int variablesLeft = SecondParam % variablesLimit;
             int numberOfRequests = 1;
-            int extraRequests    = (SecondParam - 1) / variablesLimit;
-            numberOfRequests    += extraRequests;
+            int extraRequests = (SecondParam - 1) / variablesLimit;
+            numberOfRequests += extraRequests;
 
             for (int i = 0; i < numberOfRequests; i++)
             {
@@ -68,7 +81,7 @@ namespace TransmisionDatos
 
             //Tercer parametro es un array de valores, la funcion 6 solo escribe un valor, por eso se toma el primero del array
             if (int.TryParse(ThirdParam[0], out value)) { }
-            else                                        { value = 0; }
+            else { value = 0; }
 
             //Creamos la request de funcion 6, direccion inicial y valor a escribir y la agregamos
             requests.Add(RequestBuilder.BuildWriteRegisterRequest(DispositiveId, FirstParam, value));

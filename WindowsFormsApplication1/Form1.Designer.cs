@@ -264,11 +264,11 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(18, 282);
+            this.label7.Location = new System.Drawing.Point(31, 284);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(58, 13);
+            this.label7.Size = new System.Drawing.Size(45, 13);
             this.label7.TabIndex = 23;
-            this.label7.Text = "Reintentos";
+            this.label7.Text = "Intentos";
             // 
             // inputFunction
             // 
@@ -419,7 +419,7 @@
             // 
             this.timeoutInput.Location = new System.Drawing.Point(103, 316);
             this.timeoutInput.Maximum = new decimal(new int[] {
-            1500,
+            6000,
             0,
             0,
             0});
