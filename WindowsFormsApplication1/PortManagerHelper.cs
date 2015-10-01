@@ -19,7 +19,7 @@ namespace TransmisionDatos
         }
         public void readPortManagerBuffer(PortManager portManager, int counter, string[] hexaOutputString, string[] decimalOutputString, string[] binaryOutputString, string[] statusOutputString)
         {
-            while (true) //TODO Cambiar por evento
+            while (true) //TODO Cambiar por evento, cuando usamos un dispositivo inexistente no devuelve nada, deberia mostrar ese error.
             {
                 string[] portManagerResponse = portManager.ReadPort();
                 if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "" && portManagerResponse[3] != "")
