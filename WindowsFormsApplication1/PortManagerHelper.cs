@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WindowsFormsApplication1;
 
 namespace TransmisionDatos
 {
@@ -17,37 +18,25 @@ namespace TransmisionDatos
         public PortManagerHelper()
         {
         }
+
         public void readPortManagerBuffer(PortManager portManager, int counter, string[] hexaOutputString, string[] decimalOutputString, string[] binaryOutputString, string[] statusOutputString)
         {
-            while (true) //TODO Cambiar por evento, cuando usamos un dispositivo inexistente no devuelve nada, deberia mostrar ese error.
-            {
-                string[] portManagerResponse = portManager.ReadPort();
-                if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "" && portManagerResponse[3] != "")
-                {
-                    hexaOutputString[counter] = portManagerResponse[0];
-                    decimalOutputString[counter] = portManagerResponse[1];
-                    binaryOutputString[counter] = portManagerResponse[2];
-                    statusOutputString[counter] = portManagerResponse[3];
+            //while (true)
+            //{
+            //    string[] portManagerResponse = portManager.ReadPort();
+            //    if (portManagerResponse[0] != "" && portManagerResponse[1] != "" && portManagerResponse[2] != "" && portManagerResponse[3] != "")
+            //    {
+            //        hexaOutputString[counter] = portManagerResponse[0];
+            //        decimalOutputString[counter] = portManagerResponse[1];
+            //        binaryOutputString[counter] = portManagerResponse[2];
+            //        statusOutputString[counter] = portManagerResponse[3];
 
 
-                    if (counter == 0 || (counter > 0 && hexaOutputString[counter - 1] != hexaOutputString[counter]))
-                        break;
-                }
-                else
-                {
-                    if (portManagerResponse[3] == "CRC incorrecto")
-                    {
-                        statusOutputString[counter] = " CRC incorrecto";
-                        break;
-                    }
-                    if (portManagerResponse[3] == "No data yet")
-                    {
-                        statusOutputString[counter] = " No data yet";
-                        break;
-                    }
-                }
-                Thread.Sleep(200);
-            }
+            //        if (counter == 0 || (counter > 0 && hexaOutputString[counter - 1] != hexaOutputString[counter]))
+            //            break;
+            //    }
+            //    Thread.Sleep(200);
+            //}
         }
 
         public void generateFunction3Requests(List<byte[]> requests, int DispositiveId, int FirstParam, int SecondParam, int variablesLimit)

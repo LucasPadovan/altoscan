@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WindowsFormsApplication1;
 
 namespace TransmisionDatos
 {
@@ -27,7 +29,8 @@ namespace TransmisionDatos
         private string binaryString = "";
         private string statusString = "";
 
-        public PortManager(String portName, int baudRate, Parity parity, int dataBits, StopBits stopBits)
+        private Form1 Form;
+        public PortManager(String portName, int baudRate, Parity parity, int dataBits, StopBits stopBits, Form1 form )
         {
             if (this.port == null)
             {
@@ -42,6 +45,7 @@ namespace TransmisionDatos
                 this.port.RtsEnable = true;
                 this.port.DataReceived += new SerialDataReceivedEventHandler(port_DataReceived);
 
+                Form = form;
             }
             else
             {
@@ -149,7 +153,17 @@ namespace TransmisionDatos
                 string statusCode = Convert.ToString(binaryString[9]);
                 if (statusCode == "1")
                     statusString = "Error en la trama.";
-                
+
+
+                var response = new string[4];
+
+                response[0] = hexaString;
+                response[1] = decimalString;
+                response[2] = binaryString;
+                response[3] = statusString;
+
+                Form.OnPortDataReceived(response);
+
                 //TODO: hacer una clase aparte para esto.
                 //switch (statusCode)
                 //{
@@ -182,7 +196,6 @@ namespace TransmisionDatos
             responseCRC[1] = response[response.Length - 1];
 
             byte[] calculatedCRC = RequestBuilder.GetCRC(response);
-
             if (responseCRC[0] == calculatedCRC[0] && responseCRC[1] == calculatedCRC[1])
             {
                 return true;
