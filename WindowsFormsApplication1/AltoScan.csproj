@@ -54,7 +54,6 @@
     <Compile Include="PortManagerHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RequestBuilder.cs" />
     <Compile Include="GenericBuilder.cs" />
     <Compile Include="RequestUtils.cs" />
     <Compile Include="SerialPortRequestBuilder.cs" />

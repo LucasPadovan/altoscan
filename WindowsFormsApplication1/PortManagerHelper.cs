@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WindowsFormsApplication1;
 
 namespace TransmisionDatos
 {
@@ -28,7 +29,6 @@ namespace TransmisionDatos
                     decimalOutputString[counter] = portManagerResponse[1];
                     binaryOutputString[counter] = portManagerResponse[2];
                     statusOutputString[counter] = portManagerResponse[3];
-
 
                     if (counter == 0 || (counter > 0 && hexaOutputString[counter - 1] != hexaOutputString[counter]))
                         break;
@@ -52,12 +52,12 @@ namespace TransmisionDatos
                 //Si es la ultima request, le seteamos como cantidad de registros el resto de la division 
                 if (i == extraRequests)
                 {
-                    requests.Add(RequestBuilder.BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLeft));
+                    requests.Add(SerialPortRequestBuilder.GetInstance().BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLeft));
                 }
                 //Si no es la ultima request, armamos con el limite maximo como cantidad de registros
                 else
                 {
-                    requests.Add(RequestBuilder.BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLimit));
+                    requests.Add(SerialPortRequestBuilder.GetInstance().BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLimit));
                 }
             };
         }
@@ -71,7 +71,7 @@ namespace TransmisionDatos
             else                                        { value = 0; }
 
             //Creamos la request de funcion 6, direccion inicial y valor a escribir y la agregamos
-            requests.Add(RequestBuilder.BuildWriteRegisterRequest(DispositiveId, FirstParam, value));
+            requests.Add(SerialPortRequestBuilder.GetInstance().BuildWriteRegisterRequest(DispositiveId, FirstParam, value));
         }
 
         public void generateFunction16Requests(List<byte[]> requests, int DispositiveId, int FirstParam, int SecondParam, string[] ThirdParam, int variablesLimit)
@@ -104,7 +104,7 @@ namespace TransmisionDatos
             }
 
             //Pone la request en el listado con la direccion inicial, cantidad de registros y los valores de las variables
-            requests.Add(RequestBuilder.BuildWriteMultipleRegistersRequest(DispositiveId, FirstParam, SecondParam, values));
+            requests.Add(SerialPortRequestBuilder.GetInstance().BuildWriteMultipleRegistersRequest(DispositiveId, FirstParam, SecondParam, values));
         }
 
         public string generateRequestsString(List<byte[]> requests)

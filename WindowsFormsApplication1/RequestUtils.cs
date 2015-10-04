@@ -96,7 +96,7 @@ namespace WindowsFormsApplication1
                 result[0] = hexLength[0];
                 result[1] = hexLength[1];
             }
-
+            return result;
         }
 
 

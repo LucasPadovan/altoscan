@@ -13,6 +13,23 @@ namespace WindowsFormsApplication1
         private byte[] _serialPortRequest;
         private byte[] _crc;
         private byte[] _byDeviceId;
+        private byte[] _crcFiller = new byte[2];
+
+        private static SerialPortRequestBuilder _instance;
+
+        private SerialPortRequestBuilder()
+        {
+        }
+
+        public static SerialPortRequestBuilder GetInstance()
+        {
+            if (_instance == null)
+            {
+                _instance = new SerialPortRequestBuilder();
+            }
+            
+            return _instance;
+        }
 
     public override byte[] BuildReadRegisterRequest(int deviceId, int startAddress, int registerQuantity)
     {
@@ -23,7 +40,7 @@ namespace WindowsFormsApplication1
         pdu = base.BuildReadRegisterPdu(startAddress, registerQuantity);
         
         //Calculo CRC
-        _crc = RequestUtils.GetCrc(pdu);
+        _crc = RequestUtils.GetCrc(RequestUtils.Combine(_byDeviceId, pdu, _crcFiller));
 
         //Combino los 3 arrays en 1
         _serialPortRequest = RequestUtils.Combine(_byDeviceId, pdu, _crc);
@@ -40,7 +57,7 @@ namespace WindowsFormsApplication1
         pdu = base.BuildWriteRegisterPdu(registerAddress, registerAddress);
 
         //Calculo CRC
-        _crc = RequestUtils.GetCrc(pdu);
+        _crc = RequestUtils.GetCrc(RequestUtils.Combine(_byDeviceId, pdu, _crcFiller));
 
         //Combino los 2 arrays en 1
         _serialPortRequest = RequestUtils.Combine(pdu, _crc);
@@ -58,7 +75,7 @@ namespace WindowsFormsApplication1
         pdu = base.BuildWriteMultipleRegistersPdu(startingAddress, registerQuantity, registersValues);
 
         //Calculo CRC
-        _crc = RequestUtils.GetCrc(pdu);
+        _crc = RequestUtils.GetCrc(RequestUtils.Combine(_byDeviceId, pdu, _crcFiller));
 
         //Combino los 2 arrays en 1
         _serialPortRequest = RequestUtils.Combine(pdu, _crc);

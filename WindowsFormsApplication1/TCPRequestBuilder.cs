@@ -8,7 +8,7 @@ using TransmisionDatos;
 
 namespace TransmisionDatos
 {
-    public class TCPRequestBuilder : GenericBuilder
+    public class TcpRequestBuilder : GenericBuilder
     {
         private byte[] _tcpRequest;
         private byte[] _tcpHeader;
@@ -16,20 +16,48 @@ namespace TransmisionDatos
 
         public override byte[] BuildReadRegisterRequest(int deviceId, int startAddress, int registerQuantity)
         {
-            throw new NotImplementedException();
+            // Obtenemos el PDU
+            pdu = BuildReadRegisterPdu(startAddress, registerQuantity);
+
+            // Obtenemos el header
+            _tcpHeader = BuildTcpHeader(pdu.Length, deviceId);
+
+            // Construimos la request
+            _tcpRequest = RequestUtils.Combine(_tcpHeader, pdu);
+
+            return _tcpRequest;
         }
 
         public override byte[] BuildWriteRegisterRequest(int deviceId, int registerAddress, int registerValue)
         {
-            throw new NotImplementedException();
+            // Obtenemos el PDU
+            pdu = BuildWriteRegisterPdu(registerAddress, registerValue);
+
+            // Obtenemos el header
+            _tcpHeader = BuildTcpHeader(pdu.Length, deviceId);
+
+            // Construimos la request
+            _tcpRequest = RequestUtils.Combine(_tcpHeader, pdu);
+
+            return _tcpRequest;
         }
 
         public override byte[] BuildWriteMultipleRegistersRequest(int deviceId, int startingAddress, int registerQuantity, int[] registersValues)
         {
-            throw new NotImplementedException();
+            // Obtenemos el PDU
+            pdu = BuildWriteMultipleRegistersPdu(startingAddress, registerQuantity, registersValues);
+
+            // Obtenemos el header
+            _tcpHeader = BuildTcpHeader(pdu.Length, deviceId);
+
+            // Construimos la request
+            _tcpRequest = RequestUtils.Combine(_tcpHeader, pdu);
+
+            return _tcpRequest;
         }
 
-        private byte[] buildTcpHeader(int followingBytesLength, int deviceId)
+        //Metodo q construye el header de 7 bytes de la request
+        private byte[] BuildTcpHeader(int followingBytesLength, int deviceId)
         {
             //Convertimos el identificador de la request a hexa
             byte[] requestId = RequestUtils.ConvertToBytes(_requestIdentifier);
@@ -43,53 +71,15 @@ namespace TransmisionDatos
             _tcpHeader[2] = 0;
             _tcpHeader[3] = 0;
 
-            //Number of following bytes = 6
+            //Number of following bytes
             _tcpHeader[5] = 0;
             _tcpHeader[6] = Convert.ToByte(followingBytesLength + 1);
 
+            //Id del dispositivo
+            _tcpHeader[7] = Convert.ToByte(deviceId);
 
+            return _tcpHeader;
         }
-        public static byte[] BuildTCPReadRegisterRequest(int identifier, int deviceId, int startAddress,
-            int registerQuantity)
-        {
-            request = new byte[12];
 
-            //Identificacion de la transacción
-            if (identifier < 256)
-            {
-                request[0] = 0;
-                request[1] = Convert.ToByte(identifier);
-            }
-            else
-            {
-                string hexValue = identifier.ToString("X");
-                byte[] hexIdentifier = StringToByteArray(hexValue);
-                request[0] = hexIdentifier[0];
-                request[1] = hexIdentifier[1];
-            }
-
-            //Protocol Identifier: 2 bytes = 0
-            request[3] = 0;
-            request[4] = 0;
-
-            //Number of following bytes = 6
-            request[5] = 0;
-            request[6] = 6;
-
-            //Obtenemos el array de bytes de una request COM comun y le sacamos los bytes de CRC
-            byte[] comRequest = BuildReadRegisterRequest(deviceId, startAddress, registerQuantity);
-            comRequest = comRequest.Where((source, index) => index != 8 && index != 7).ToArray();
-
-            //Seguimos armando la request
-            request[7] = comRequest[0];
-            request[8] = comRequest[1];
-            request[9] = comRequest[2];
-            request[10] = comRequest[3];
-            request[11] = comRequest[4];
-            request[12] = comRequest[5];
-
-            return request;
-
-        }
      }
 }
