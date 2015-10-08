@@ -71,17 +71,25 @@
             this.inputThirdParam = new System.Windows.Forms.RichTextBox();
             this.errorTextBox = new System.Windows.Forms.TextBox();
             this.tableOutput = new System.Windows.Forms.RichTextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.connectionType = new System.Windows.Forms.ComboBox();
+            this.label15 = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.tcpListeningPort = new System.Windows.Forms.NumericUpDown();
+            this.tcpConnectionAddress = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.inputDispositiveId)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputFirstParam)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.inputSecondParam)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numberOfRetriesInput)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.timeoutInput)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tcpListeningPort)).BeginInit();
             this.SuspendLayout();
             // 
             // cboPorts
             // 
             this.cboPorts.FormattingEnabled = true;
-            this.cboPorts.Location = new System.Drawing.Point(103, 27);
+            this.cboPorts.Location = new System.Drawing.Point(103, 72);
             this.cboPorts.Name = "cboPorts";
             this.cboPorts.Size = new System.Drawing.Size(121, 21);
             this.cboPorts.TabIndex = 1;
@@ -89,7 +97,7 @@
             // cboBaudRate
             // 
             this.cboBaudRate.FormattingEnabled = true;
-            this.cboBaudRate.Location = new System.Drawing.Point(103, 69);
+            this.cboBaudRate.Location = new System.Drawing.Point(103, 114);
             this.cboBaudRate.Name = "cboBaudRate";
             this.cboBaudRate.Size = new System.Drawing.Size(121, 21);
             this.cboBaudRate.TabIndex = 2;
@@ -97,7 +105,7 @@
             // cboDataBits
             // 
             this.cboDataBits.FormattingEnabled = true;
-            this.cboDataBits.Location = new System.Drawing.Point(103, 110);
+            this.cboDataBits.Location = new System.Drawing.Point(103, 155);
             this.cboDataBits.Name = "cboDataBits";
             this.cboDataBits.Size = new System.Drawing.Size(121, 21);
             this.cboDataBits.TabIndex = 3;
@@ -105,7 +113,7 @@
             // cboStopBits
             // 
             this.cboStopBits.FormattingEnabled = true;
-            this.cboStopBits.Location = new System.Drawing.Point(103, 151);
+            this.cboStopBits.Location = new System.Drawing.Point(103, 196);
             this.cboStopBits.Name = "cboStopBits";
             this.cboStopBits.Size = new System.Drawing.Size(121, 21);
             this.cboStopBits.TabIndex = 4;
@@ -113,7 +121,7 @@
             // cboParity
             // 
             this.cboParity.FormattingEnabled = true;
-            this.cboParity.Location = new System.Drawing.Point(103, 188);
+            this.cboParity.Location = new System.Drawing.Point(103, 233);
             this.cboParity.Name = "cboParity";
             this.cboParity.Size = new System.Drawing.Size(121, 21);
             this.cboParity.TabIndex = 5;
@@ -122,7 +130,7 @@
             // 
             this.cboHandShaking.Enabled = false;
             this.cboHandShaking.FormattingEnabled = true;
-            this.cboHandShaking.Location = new System.Drawing.Point(103, 225);
+            this.cboHandShaking.Location = new System.Drawing.Point(103, 270);
             this.cboHandShaking.Name = "cboHandShaking";
             this.cboHandShaking.Size = new System.Drawing.Size(121, 21);
             this.cboHandShaking.TabIndex = 6;
@@ -145,7 +153,7 @@
             // 
             // startQuery
             // 
-            this.startQuery.Location = new System.Drawing.Point(105, 399);
+            this.startQuery.Location = new System.Drawing.Point(105, 494);
             this.startQuery.Name = "startQuery";
             this.startQuery.Size = new System.Drawing.Size(139, 28);
             this.startQuery.TabIndex = 10;
@@ -156,7 +164,7 @@
             // puerto
             // 
             this.puerto.AutoSize = true;
-            this.puerto.Location = new System.Drawing.Point(8, 31);
+            this.puerto.Location = new System.Drawing.Point(18, 76);
             this.puerto.Name = "puerto";
             this.puerto.Size = new System.Drawing.Size(68, 13);
             this.puerto.TabIndex = 11;
@@ -165,7 +173,7 @@
             // velocidad
             // 
             this.velocidad.AutoSize = true;
-            this.velocidad.Location = new System.Drawing.Point(22, 72);
+            this.velocidad.Location = new System.Drawing.Point(32, 117);
             this.velocidad.Name = "velocidad";
             this.velocidad.Size = new System.Drawing.Size(54, 13);
             this.velocidad.TabIndex = 12;
@@ -174,7 +182,7 @@
             // dataBits
             // 
             this.dataBits.AutoSize = true;
-            this.dataBits.Location = new System.Drawing.Point(27, 113);
+            this.dataBits.Location = new System.Drawing.Point(37, 158);
             this.dataBits.Name = "dataBits";
             this.dataBits.Size = new System.Drawing.Size(49, 13);
             this.dataBits.TabIndex = 13;
@@ -183,7 +191,7 @@
             // stopBits
             // 
             this.stopBits.AutoSize = true;
-            this.stopBits.Location = new System.Drawing.Point(28, 154);
+            this.stopBits.Location = new System.Drawing.Point(38, 199);
             this.stopBits.Name = "stopBits";
             this.stopBits.Size = new System.Drawing.Size(48, 13);
             this.stopBits.TabIndex = 14;
@@ -192,7 +200,7 @@
             // paridad
             // 
             this.paridad.AutoSize = true;
-            this.paridad.Location = new System.Drawing.Point(33, 191);
+            this.paridad.Location = new System.Drawing.Point(43, 236);
             this.paridad.Name = "paridad";
             this.paridad.Size = new System.Drawing.Size(43, 13);
             this.paridad.TabIndex = 15;
@@ -201,7 +209,7 @@
             // saludo
             // 
             this.saludo.AutoSize = true;
-            this.saludo.Location = new System.Drawing.Point(36, 228);
+            this.saludo.Location = new System.Drawing.Point(46, 273);
             this.saludo.Name = "saludo";
             this.saludo.Size = new System.Drawing.Size(40, 13);
             this.saludo.TabIndex = 16;
@@ -228,7 +236,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(289, 31);
+            this.label3.Location = new System.Drawing.Point(293, 31);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(70, 13);
             this.label3.TabIndex = 19;
@@ -237,7 +245,7 @@
             // labelFirstParam
             // 
             this.labelFirstParam.AutoSize = true;
-            this.labelFirstParam.Location = new System.Drawing.Point(278, 114);
+            this.labelFirstParam.Location = new System.Drawing.Point(282, 113);
             this.labelFirstParam.Name = "labelFirstParam";
             this.labelFirstParam.Size = new System.Drawing.Size(81, 13);
             this.labelFirstParam.TabIndex = 20;
@@ -264,7 +272,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(31, 284);
+            this.label7.Location = new System.Drawing.Point(309, 387);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(45, 13);
             this.label7.TabIndex = 23;
@@ -281,7 +289,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(88, 261);
+            this.label8.Location = new System.Drawing.Point(366, 364);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(136, 13);
             this.label8.TabIndex = 28;
@@ -290,7 +298,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(31, 318);
+            this.label9.Location = new System.Drawing.Point(309, 421);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(45, 13);
             this.label9.TabIndex = 29;
@@ -343,7 +351,7 @@
             // label14
             // 
             this.label14.AutoSize = true;
-            this.label14.Location = new System.Drawing.Point(31, 379);
+            this.label14.Location = new System.Drawing.Point(31, 468);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(48, 13);
             this.label14.TabIndex = 38;
@@ -351,7 +359,7 @@
             // 
             // stopQuery
             // 
-            this.stopQuery.Location = new System.Drawing.Point(250, 399);
+            this.stopQuery.Location = new System.Drawing.Point(250, 494);
             this.stopQuery.Name = "stopQuery";
             this.stopQuery.Size = new System.Drawing.Size(139, 28);
             this.stopQuery.TabIndex = 39;
@@ -361,10 +369,10 @@
             // 
             // toSendTextBox
             // 
-            this.toSendTextBox.Location = new System.Drawing.Point(105, 376);
+            this.toSendTextBox.Location = new System.Drawing.Point(85, 465);
             this.toSendTextBox.Name = "toSendTextBox";
             this.toSendTextBox.ReadOnly = true;
-            this.toSendTextBox.Size = new System.Drawing.Size(491, 20);
+            this.toSendTextBox.Size = new System.Drawing.Size(1086, 20);
             this.toSendTextBox.TabIndex = 40;
             // 
             // inputDispositiveId
@@ -373,11 +381,6 @@
             this.inputDispositiveId.Name = "inputDispositiveId";
             this.inputDispositiveId.Size = new System.Drawing.Size(124, 20);
             this.inputDispositiveId.TabIndex = 41;
-            this.inputDispositiveId.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
             // 
             // inputFirstParam
             // 
@@ -405,7 +408,7 @@
             // 
             // numberOfRetriesInput
             // 
-            this.numberOfRetriesInput.Location = new System.Drawing.Point(103, 282);
+            this.numberOfRetriesInput.Location = new System.Drawing.Point(381, 385);
             this.numberOfRetriesInput.Name = "numberOfRetriesInput";
             this.numberOfRetriesInput.Size = new System.Drawing.Size(121, 20);
             this.numberOfRetriesInput.TabIndex = 44;
@@ -417,7 +420,7 @@
             // 
             // timeoutInput
             // 
-            this.timeoutInput.Location = new System.Drawing.Point(103, 316);
+            this.timeoutInput.Location = new System.Drawing.Point(381, 419);
             this.timeoutInput.Maximum = new decimal(new int[] {
             6000,
             0,
@@ -434,7 +437,7 @@
             // 
             // cleanOutputButton
             // 
-            this.cleanOutputButton.Location = new System.Drawing.Point(395, 399);
+            this.cleanOutputButton.Location = new System.Drawing.Point(395, 494);
             this.cleanOutputButton.Name = "cleanOutputButton";
             this.cleanOutputButton.Size = new System.Drawing.Size(139, 28);
             this.cleanOutputButton.TabIndex = 46;
@@ -445,7 +448,7 @@
             // labelThirdParam
             // 
             this.labelThirdParam.AutoSize = true;
-            this.labelThirdParam.Location = new System.Drawing.Point(257, 196);
+            this.labelThirdParam.Location = new System.Drawing.Point(261, 196);
             this.labelThirdParam.Name = "labelThirdParam";
             this.labelThirdParam.Size = new System.Drawing.Size(102, 13);
             this.labelThirdParam.TabIndex = 47;
@@ -461,10 +464,10 @@
             // 
             // errorTextBox
             // 
-            this.errorTextBox.Location = new System.Drawing.Point(11, 443);
+            this.errorTextBox.Location = new System.Drawing.Point(85, 532);
             this.errorTextBox.Name = "errorTextBox";
             this.errorTextBox.ReadOnly = true;
-            this.errorTextBox.Size = new System.Drawing.Size(926, 20);
+            this.errorTextBox.Size = new System.Drawing.Size(1086, 20);
             this.errorTextBox.TabIndex = 49;
             // 
             // tableOutput
@@ -475,11 +478,88 @@
             this.tableOutput.TabIndex = 50;
             this.tableOutput.Text = "";
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(36, 532);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(40, 13);
+            this.label4.TabIndex = 51;
+            this.label4.Text = "Estado";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(12, 34);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(74, 13);
+            this.label5.TabIndex = 53;
+            this.label5.Text = "Tipo conexión";
+            // 
+            // connectionType
+            // 
+            this.connectionType.FormattingEnabled = true;
+            this.connectionType.Location = new System.Drawing.Point(103, 31);
+            this.connectionType.Name = "connectionType";
+            this.connectionType.Size = new System.Drawing.Size(121, 21);
+            this.connectionType.TabIndex = 52;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(32, 360);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(52, 13);
+            this.label15.TabIndex = 57;
+            this.label15.Text = "Dirección";
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(18, 319);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(68, 13);
+            this.label16.TabIndex = 56;
+            this.label16.Text = "Puerto salida";
+            // 
+            // tcpListeningPort
+            // 
+            this.tcpListeningPort.Location = new System.Drawing.Point(103, 316);
+            this.tcpListeningPort.Maximum = new decimal(new int[] {
+            8000,
+            0,
+            0,
+            0});
+            this.tcpListeningPort.Name = "tcpListeningPort";
+            this.tcpListeningPort.Size = new System.Drawing.Size(121, 20);
+            this.tcpListeningPort.TabIndex = 58;
+            this.tcpListeningPort.Value = new decimal(new int[] {
+            502,
+            0,
+            0,
+            0});
+            // 
+            // tcpConnectionAddress
+            // 
+            this.tcpConnectionAddress.Enabled = false;
+            this.tcpConnectionAddress.Location = new System.Drawing.Point(103, 357);
+            this.tcpConnectionAddress.Name = "tcpConnectionAddress";
+            this.tcpConnectionAddress.Size = new System.Drawing.Size(121, 20);
+            this.tcpConnectionAddress.TabIndex = 59;
+            this.tcpConnectionAddress.Text = "127.0.0.1";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1183, 466);
+            this.ClientSize = new System.Drawing.Size(1183, 560);
+            this.Controls.Add(this.tcpConnectionAddress);
+            this.Controls.Add(this.tcpListeningPort);
+            this.Controls.Add(this.label15);
+            this.Controls.Add(this.label16);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.connectionType);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.tableOutput);
             this.Controls.Add(this.errorTextBox);
             this.Controls.Add(this.inputThirdParam);
@@ -530,6 +610,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.inputSecondParam)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numberOfRetriesInput)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.timeoutInput)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tcpListeningPort)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -578,8 +659,15 @@
         private System.Windows.Forms.Label labelThirdParam;
         private System.Windows.Forms.RichTextBox inputThirdParam;
         private System.Windows.Forms.TextBox errorTextBox;
-        public System.Windows.Forms.NumericUpDown inputDispositiveId;
         private System.Windows.Forms.RichTextBox tableOutput;
+        public System.Windows.Forms.NumericUpDown inputDispositiveId;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.ComboBox connectionType;
+        private System.Windows.Forms.Label label15;
+        private System.Windows.Forms.Label label16;
+        public System.Windows.Forms.NumericUpDown tcpListeningPort;
+        private System.Windows.Forms.TextBox tcpConnectionAddress;
     }
 }
 

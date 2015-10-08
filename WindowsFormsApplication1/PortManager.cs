@@ -63,6 +63,7 @@ namespace TransmisionDatos
                 port.Open();
             }
             port.WriteTimeout = timeout;
+            port.ReadTimeout  = timeout;
         }
         public void ClosePort()
         {
@@ -108,7 +109,6 @@ namespace TransmisionDatos
             int bytes        = port.BytesToRead;
             byte[] buffer    = new byte[bytes];
             int count        = buffer.Length;
-            int count2       = buffer.Length;
             string decString = "";
             string binString = "";
 
@@ -125,21 +125,11 @@ namespace TransmisionDatos
                     if (--count > 0)
                     {
                         decString += Convert.ToInt16(mByte).ToString() + "-";
-                    }
-                    else
-                    {
-                        decString += Convert.ToInt16(mByte).ToString();
-                    }
-                }
-                //todo
-                foreach (byte mByte in buffer)
-                {
-                    if (--count2 > 0)
-                    {
                         binString += Convert.ToString(mByte, 2).PadLeft(8, '0') + "-";
                     }
                     else
                     {
+                        decString += Convert.ToInt16(mByte).ToString();
                         binString += Convert.ToString(mByte, 2).PadLeft(8, '0');
                     }
                 }

@@ -21,10 +21,6 @@ namespace WindowsFormsApplication1
 
         delegate void SetTextCallback(string text);
 
-        Thread ConfigScan;
-
-        Boolean terminate = false;
-
         byte[] request = new byte[8];
         List<byte[]> requests;
 
@@ -46,11 +42,10 @@ namespace WindowsFormsApplication1
 
         public event DataReceived PortDataReceived;
 
-
         public void OnPortDataReceived(string[] parameter)
         {
             var handler = PortDataReceived;
-            if (handler != null) 
+            if (handler != null)
                 handler(parameter);
 
             this.Invoke((MethodInvoker)delegate()
@@ -59,18 +54,19 @@ namespace WindowsFormsApplication1
                 this.decimalOutput.Text += "\n" + parameter[1];
                 this.binOutput.Text     += "\n" + parameter[2];
                 this.errorTextBox.Text  += parameter[3];
-            }); 
+            });
         }
 
         public Form1()
         {
             InitializeComponent();
             InitializeFields();
-            //Hilo que arma la request a medida q cambian los inputs
-            StartConfigScanThread();
             //Observador que recibe datos del puerto
             ComPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(port_DataReceived_1);
-            this.FormClosed += TerminateThreads;
+            //Cuando cambie un valor en la interfaz genero los requests para no tener un bucle todo el tiempo
+            BindEventsForInputs();
+            DisableFieldsFor();
+            
         }
 
         //Inicializa todos los campos del formulario
@@ -137,78 +133,70 @@ namespace WindowsFormsApplication1
             //get the first item print it in the text 
             inputFunction.Text = inputFunction.Items[0].ToString();
 
+            //Conection type
+            connectionType.Items.Add("TCP/IP");
+            connectionType.Items.Add("Serial Port");
+            //get the first item print it in the text 
+            connectionType.Text = connectionType.Items[0].ToString();
         }
 
-        //Inicia el hilo de escaneo de configuración desde form
-        private void StartConfigScanThread()
-        {
-            ConfigScan = new Thread(ReadConfig);
-            ConfigScan.Start();
-        }
-
-        //Leer configuracion del form
+        //Leer configuracion del form y armo los requests
         private void ReadConfig() {
-            //Mientras el hilo de configuracion este vivo 
-            while (!terminate && ConfigScan.IsAlive)
-            {
-                int DispositiveId;
-                int FirstParam;
-                int SecondParam;
+            int DispositiveId;
+            int FirstParam;
+            int SecondParam;
 
-                string   textAreaString   = ReadTextArea();
-                string[] ThirdParam       = textAreaString.Split(",".ToArray());
-                string   FunctionSelected = ReadFunctionSelected();
+            string   textAreaString   = ReadTextArea();
+            string[] ThirdParam       = textAreaString.Split(",".ToArray());
+            string   FunctionSelected = ReadFunctionSelected();
 
-                //Usamos una funcion para convertir a int los valores del formulario evitando valores no deseados.
-                DispositiveId = parseToInt(inputDispositiveId.Text);
-                FirstParam    = parseToInt(inputFirstParam.Text);
-                SecondParam   = parseToInt(inputSecondParam.Text);
+            //Usamos una funcion para convertir a int los valores del formulario evitando valores no deseados.
+            DispositiveId = parseToInt(inputDispositiveId.Text);
+            FirstParam    = parseToInt(inputFirstParam.Text);
+            SecondParam   = parseToInt(inputSecondParam.Text);
                 
-                //Lista para agregar request en caso de que sea necesario mas de una request
-                requests = new List<byte[]>();
+            //Lista para agregar request en caso de que sea necesario mas de una request
+            requests = new List<byte[]>();
 
-                switch (FunctionSelected) {
-                    case "3":
-                        //Habilita los parametros que la funcion 3 necesita
-                        EnableInputFirstParam(true); //Dir inicial
-                        EnableInputSecondParam(true); //Cantidad de variables
-                        EnableInputThirdParam(false); //Valor de variables
+            switch (FunctionSelected) {
+                case "3":
+                    //Habilita los parametros que la funcion 3 necesita
+                    EnableInputFirstParam(true); //Dir inicial
+                    EnableInputSecondParam(true); //Cantidad de variables
+                    EnableInputThirdParam(false); //Valor de variables
 
-                        //Llamamos a la funcion del helper que se encarga de generar todas las requests necesarias a partir de la informaicon obtenida del formulario.
-                        portManagerHelper.generateFunction3Requests(requests, DispositiveId, FirstParam, SecondParam, variablesLimit);
+                    //Llamamos a la funcion del helper que se encarga de generar todas las requests necesarias a partir de la informaicon obtenida del formulario.
+                    portManagerHelper.generateFunction3Requests(requests, DispositiveId, FirstParam, SecondParam, variablesLimit);
 
-                        break;
+                    break;
 
-                    case "6":
-                        //Habilito los parametros para la funcion 6
-                        EnableInputFirstParam(true); //Dir inicial
-                        EnableInputSecondParam(false); //Cantidad de variables
-                        EnableInputThirdParam(true); //Valor de variables
+                case "6":
+                    //Habilito los parametros para la funcion 6
+                    EnableInputFirstParam(true); //Dir inicial
+                    EnableInputSecondParam(false); //Cantidad de variables
+                    EnableInputThirdParam(true); //Valor de variables
 
-                        //Llamamos a la funcion del helper que se encarga de generar todas las requests necesarias a partir de la informaicon obtenida del formulario.
-                        portManagerHelper.generateFunction6Requests(requests, DispositiveId, FirstParam, ThirdParam, variablesLimit);
+                    //Llamamos a la funcion del helper que se encarga de generar todas las requests necesarias a partir de la informaicon obtenida del formulario.
+                    portManagerHelper.generateFunction6Requests(requests, DispositiveId, FirstParam, ThirdParam, variablesLimit);
                        
-                        break;
+                    break;
 
-                    case "16":
-                        //Habilitamos todos los parametros para funcion 16, pos inicial, cantidad de vars, valores de las vars-
-                        EnableInputFirstParam(true); //Dir inicial
-                        EnableInputSecondParam(true); //Cantidad de variables
-                        EnableInputThirdParam(true); //Valor de variables
+                case "16":
+                    //Habilitamos todos los parametros para funcion 16, pos inicial, cantidad de vars, valores de las vars-
+                    EnableInputFirstParam(true); //Dir inicial
+                    EnableInputSecondParam(true); //Cantidad de variables
+                    EnableInputThirdParam(true); //Valor de variables
 
-                        //Llamamos a la funcion del helper que se encarga de generar todas las requests necesarias a partir de la informaicon obtenida del formulario.
-                        portManagerHelper.generateFunction16Requests(requests, DispositiveId, FirstParam, SecondParam, ThirdParam, variablesLimit);
+                    //Llamamos a la funcion del helper que se encarga de generar todas las requests necesarias a partir de la informaicon obtenida del formulario.
+                    portManagerHelper.generateFunction16Requests(requests, DispositiveId, FirstParam, SecondParam, ThirdParam, variablesLimit);
 
-                        break;
-                }
-
-                //Arma la string con las request que se van a mostrar en el form, separadas por comas
-                string TextToWrite = portManagerHelper.generateRequestsString(requests);
-                //Escribe en el form la/s request/s armada/s
-                WriteToSendTextBox(TextToWrite);
-
-                Thread.Sleep(200);
+                    break;
             }
+
+            //Arma la string con las request que se van a mostrar en el form, separadas por comas
+            string TextToWrite = portManagerHelper.generateRequestsString(requests);
+            //Escribe en el form la/s request/s armada/s
+            WriteToSendTextBox(TextToWrite);
         }
 
         //Listener que verifica que haya datos en el buffer
@@ -221,6 +209,31 @@ namespace WindowsFormsApplication1
             }
         }
 
+        //Deshabilita los campos para tcp/ip o serial port
+        public void DisableFieldsFor()
+        {
+            string selectedConnection = connectionType.Text;
+            switch (selectedConnection)
+            {
+                case "TCP/IP":
+                    tcpListeningPort.Enabled = true;
+                    cboBaudRate.Enabled      = false;
+                    cboDataBits.Enabled      = false;
+                    cboParity.Enabled        = false;
+                    cboPorts.Enabled         = false;
+                    cboStopBits.Enabled      = false;
+                    break;
+                case "Serial Port":
+                    tcpListeningPort.Enabled = false;
+                    cboBaudRate.Enabled      = true;
+                    cboDataBits.Enabled      = true;
+                    cboParity.Enabled        = true;
+                    cboPorts.Enabled         = true;
+                    cboStopBits.Enabled      = true;
+                    break;
+            }
+        }
+
 
         //Toma las request armadas guardadas en un param de esta clase, y ejecuta metodos del port
         //    Cosas a implementar:
@@ -228,6 +241,7 @@ namespace WindowsFormsApplication1
         private void startQuery_Click(object sender, EventArgs e)
         {
             //Inicializo el port manager con la información que tengo en el formulario
+            ReadConfig();
             initializePortManager();
 
             //Como los requests se estan generando todo el tiempo, al hacer click se los envia al puerto y se espera la respuesta.
@@ -244,12 +258,6 @@ namespace WindowsFormsApplication1
             hexaOutput.Text    = "";
             binOutput.Text     = "";
             errorTextBox.Text  = "";
-        }
-
-        private void TerminateThreads(object sender, EventArgs e)
-        {
-            terminate = true;
-            ConfigScan.Abort();
         }
 
         private void readPortBuffer(PortManager portManager, int counter)
@@ -324,6 +332,7 @@ namespace WindowsFormsApplication1
                 try
                 {
                     //Abrimos el puerto
+                    //portManager.ClosePort(); //cuando le damos a un dispositivo inexistente y volvemos a uno existente sigue
                     portManager.OpenPort(timeout);
                     //Inicializamos las variables del formulario como arrays de string de tamaño = cant de requests
                     hexaOutputString    = new string[requests.Count];
@@ -357,8 +366,9 @@ namespace WindowsFormsApplication1
                 }
                 catch (Exception e)
                 {
-                    statusOutputString = new string[1];
-                    statusOutputString[0] = "Intento " + Convert.ToString(currentRetry) + " - Error de timeout";
+                    portManager.ClosePort();
+                    statusOutputString    = new string[1];
+                    statusOutputString[0] = "Intento " + Convert.ToString(currentRetry) + " - " + e.Message;
                     WriteStatusTextBox();
                 }
             }
@@ -382,8 +392,8 @@ namespace WindowsFormsApplication1
                 this.Invoke(new Action(WriteStatusTextBox));
                 return;
             }
-            string value = "";
-            int counter = 0;
+            string value  = "";
+            int counter   = 0;
             string header = "Response ";
             foreach (string status in statusOutputString)
             {
@@ -449,8 +459,8 @@ namespace WindowsFormsApplication1
                 return;
             }
             decimalOutput.Text += decimalValue;
-            hexaOutput.Text += hexaValue;
-            binOutput.Text += binaryValue;
+            hexaOutput.Text    += hexaValue;
+            binOutput.Text     += binaryValue;
         }
 
         //Parsers
@@ -468,6 +478,46 @@ namespace WindowsFormsApplication1
             return response;
         }
 
-        
+        //Binders
+        private void BindEventsForInputs()
+        {
+            this.inputDispositiveId.TextChanged      += inputDispositiveId_TextChanged;
+            this.inputFunction.SelectedValueChanged  += inputFunction_SelectedValueChanged;
+            this.inputFirstParam.TextChanged         += inputFirstParam_TextChanged;
+            this.inputSecondParam.TextChanged        += inputSecondParam_TextChanged;
+            this.inputThirdParam.TextChanged         += inputThirdParam_TextChanged;
+            this.connectionType.SelectedValueChanged += connectionType_SelectedValueChanged;
+        }
+
+        void inputThirdParam_TextChanged(object sender, EventArgs e)
+        {
+            ReadConfig();
+        }
+
+        void inputSecondParam_TextChanged(object sender, EventArgs e)
+        {
+            ReadConfig();
+        }
+
+        void inputFirstParam_TextChanged(object sender, EventArgs e)
+        {
+            ReadConfig();
+        }
+
+        void inputFunction_SelectedValueChanged(object sender, EventArgs e)
+        {
+            ReadConfig();
+        }
+
+        void inputDispositiveId_TextChanged(object sender, EventArgs e)
+        {
+            ReadConfig();
+        }
+
+        void connectionType_SelectedValueChanged(object sender, EventArgs e)
+        {
+            DisableFieldsFor();
+        }
+
     }
 }
