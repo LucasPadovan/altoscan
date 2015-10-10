@@ -11,8 +11,22 @@ namespace TransmisionDatos
     public class TcpRequestBuilder : GenericBuilder
     {
         private byte[] _tcpRequest;
-        private byte[] _tcpHeader;
+        private byte[] _tcpHeader = new byte[7];
         private static int _requestIdentifier = 1;
+
+        private TcpRequestBuilder() { }
+
+        private static TcpRequestBuilder _instance;
+
+        public static TcpRequestBuilder GetInstance()
+        {
+            if (_instance == null)
+            {
+                _instance = new TcpRequestBuilder();
+            }
+
+            return _instance;
+        }
 
         public override byte[] BuildReadRegisterRequest(int deviceId, int startAddress, int registerQuantity)
         {
@@ -72,11 +86,11 @@ namespace TransmisionDatos
             _tcpHeader[3] = 0;
 
             //Number of following bytes
-            _tcpHeader[5] = 0;
-            _tcpHeader[6] = Convert.ToByte(followingBytesLength + 1);
+            _tcpHeader[4] = 0;
+            _tcpHeader[5] = Convert.ToByte(followingBytesLength + 1);
 
             //Id del dispositivo
-            _tcpHeader[7] = Convert.ToByte(deviceId);
+            _tcpHeader[6] = Convert.ToByte(deviceId);
 
             return _tcpHeader;
         }

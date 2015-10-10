@@ -215,6 +215,13 @@ namespace WindowsFormsApplication1
         //    Si no se puede comunicar que largue un error y termine
         private void startQuery_Click(object sender, EventArgs e)
         {
+            //Test purpose only
+            TcpPortManager tcp = new TcpPortManager();
+            byte[] request = TcpRequestBuilder.GetInstance().BuildReadRegisterRequest(1, 1, 1);
+            tcp.Write(request);
+
+            tcp.ReadPort();
+
             //Inicializo el port manager con la información que tengo en el formulario
             initializePortManager();
 

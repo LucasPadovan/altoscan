@@ -50,6 +50,7 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="TcpPortManager.cs" />
     <Compile Include="PortManager.cs" />
     <Compile Include="PortManagerHelper.cs" />
     <Compile Include="Program.cs" />
