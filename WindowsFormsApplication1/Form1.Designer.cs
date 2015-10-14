@@ -1,4 +1,4 @@
-﻿namespace WindowsFormsApplication1
+﻿namespace AltoScan
 {
     partial class Form1
     {
@@ -670,4 +670,3 @@
         private System.Windows.Forms.TextBox tcpConnectionAddress;
     }
 }
-

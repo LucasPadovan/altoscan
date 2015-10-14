@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using WindowsFormsApplication1;
+using AltoScan;
 
 namespace TransmisionDatos
 {
@@ -185,13 +185,14 @@ namespace TransmisionDatos
             responseCRC[0] = response[response.Length - 2];
             responseCRC[1] = response[response.Length - 1];
 
-            byte[] calculatedCRC = RequestBuilder.GetCRC(response);
+            byte[] calculatedCRC = RequestUtils.GetCrc(response);
+
             if (responseCRC[0] == calculatedCRC[0] && responseCRC[1] == calculatedCRC[1])
             {
                 return true;
             }
-
             return false;
         }
     }
 }
+

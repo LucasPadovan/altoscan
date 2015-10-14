@@ -12,7 +12,7 @@ using System.Threading;
 using TransmisionDatos;
 
 
-namespace WindowsFormsApplication1
+namespace AltoScan
 {
     public partial class Form1 : Form
     {
@@ -25,6 +25,7 @@ namespace WindowsFormsApplication1
         List<byte[]> requests;
 
         PortManager portManager;
+        TcpPortManager tcpPortManager;
 
         string[] hexaOutputString;
         string[] decimalOutputString;
@@ -166,7 +167,7 @@ namespace WindowsFormsApplication1
                     EnableInputThirdParam(false); //Valor de variables
 
                     //Llamamos a la funcion del helper que se encarga de generar todas las requests necesarias a partir de la informaicon obtenida del formulario.
-                    portManagerHelper.generateFunction3Requests(requests, DispositiveId, FirstParam, SecondParam, variablesLimit);
+                    portManagerHelper.generateFunction3Requests(requests, DispositiveId, FirstParam, SecondParam, variablesLimit, connectionType.Text);
 
                     break;
 
@@ -177,7 +178,7 @@ namespace WindowsFormsApplication1
                     EnableInputThirdParam(true); //Valor de variables
 
                     //Llamamos a la funcion del helper que se encarga de generar todas las requests necesarias a partir de la informaicon obtenida del formulario.
-                    portManagerHelper.generateFunction6Requests(requests, DispositiveId, FirstParam, ThirdParam, variablesLimit);
+                    portManagerHelper.generateFunction6Requests(requests, DispositiveId, FirstParam, ThirdParam, variablesLimit, connectionType.Text);
                        
                     break;
 
@@ -188,7 +189,7 @@ namespace WindowsFormsApplication1
                     EnableInputThirdParam(true); //Valor de variables
 
                     //Llamamos a la funcion del helper que se encarga de generar todas las requests necesarias a partir de la informaicon obtenida del formulario.
-                    portManagerHelper.generateFunction16Requests(requests, DispositiveId, FirstParam, SecondParam, ThirdParam, variablesLimit);
+                    portManagerHelper.generateFunction16Requests(requests, DispositiveId, FirstParam, SecondParam, ThirdParam, variablesLimit, connectionType.Text);
 
                     break;
             }
@@ -242,10 +243,17 @@ namespace WindowsFormsApplication1
         {
             //Inicializo el port manager con la información que tengo en el formulario
             ReadConfig();
-            initializePortManager();
 
-            //Como los requests se estan generando todo el tiempo, al hacer click se los envia al puerto y se espera la respuesta.
-            sendRequestsToPort();
+            if (connectionType.Text == "TCP/IP") {
+                initializeTcpPortManager();
+                sendRequestsToTcp();
+            }
+            else {
+
+                initializePortManager();
+                //Como los requests se estan generando todo el tiempo, al hacer click se los envia al puerto y se espera la respuesta.
+                sendRequestsToSerial();
+            }
         }
 
         private void stopQuery_Click(object sender, EventArgs e)
@@ -324,7 +332,13 @@ namespace WindowsFormsApplication1
             portManager = new PortManager(portName, baudRate, parity, dataBits, stopBits,this);
         }
 
-        private void sendRequestsToPort()
+        private void initializeTcpPortManager()
+        {
+            int tcpPort    = parseToInt(tcpListeningPort.Text);
+            tcpPortManager = new TcpPortManager(tcpPort);
+        }
+
+        private void sendRequestsToSerial()
         {
             //Por cada intento
             for (int currentRetry = 1; currentRetry <= numberOfRetries; currentRetry++)
@@ -335,10 +349,10 @@ namespace WindowsFormsApplication1
                     //portManager.ClosePort(); //cuando le damos a un dispositivo inexistente y volvemos a uno existente sigue
                     portManager.OpenPort(timeout);
                     //Inicializamos las variables del formulario como arrays de string de tamaño = cant de requests
-                    hexaOutputString    = new string[requests.Count];
+                    hexaOutputString = new string[requests.Count];
                     decimalOutputString = new string[requests.Count];
-                    binaryOutputString  = new string[requests.Count];
-                    statusOutputString  = new string[requests.Count];
+                    binaryOutputString = new string[requests.Count];
+                    statusOutputString = new string[requests.Count];
 
                     int counter = 0;
                     foreach (var request in requests)
@@ -367,7 +381,57 @@ namespace WindowsFormsApplication1
                 catch (Exception e)
                 {
                     portManager.ClosePort();
-                    statusOutputString    = new string[1];
+                    statusOutputString = new string[1];
+                    statusOutputString[0] = "Intento " + Convert.ToString(currentRetry) + " - " + e.Message;
+                    WriteStatusTextBox();
+                }
+            }
+        }
+
+        private void sendRequestsToTcp()
+        {
+            //Por cada intento
+            for (int currentRetry = 1; currentRetry <= numberOfRetries; currentRetry++)
+            {
+                try
+                {
+                    //Abrimos el puerto
+                    //portManager.ClosePort(); //cuando le damos a un dispositivo inexistente y volvemos a uno existente sigue
+                    portManager.OpenPort(timeout);
+                    //Inicializamos las variables del formulario como arrays de string de tamaño = cant de requests
+                    hexaOutputString = new string[requests.Count];
+                    decimalOutputString = new string[requests.Count];
+                    binaryOutputString = new string[requests.Count];
+                    statusOutputString = new string[requests.Count];
+
+                    int counter = 0;
+                    foreach (var request in requests)
+                    {
+                        //Tenemos que evitar hacer un request innecesario, si el primero falló, no seguimos para evitar quedar leyendo una respuesta que nunca llegará.
+                        if (counter == 0 || (statusOutputString[counter - 1] != null && statusOutputString[counter - 1] != "Error en la trama."))
+                        {
+                            //si el id de dispositivo o algo esta mal, al querer escribir se detona
+                            portManager.Write(request, 0, request.Length, timeout);
+                            //Aca leemos el buffer todo el tiempo, hasta que algo vuelve
+                            readPortBuffer(portManager, counter);
+                            //Cuando tiene las variables completas, escribe el formulario
+                            string header = "\nResponse " + Convert.ToString(counter) + " -- ";
+                            WriteOutput(
+                                header + hexaOutputString[counter],
+                                header + decimalOutputString[counter],
+                                header + binaryOutputString[counter]
+                            );
+                            counter++;
+                        }
+                    }
+                    WriteStatusTextBox();
+                    currentRetry = numberOfRetries;
+                    break;
+                }
+                catch (Exception e)
+                {
+                    portManager.ClosePort();
+                    statusOutputString = new string[1];
                     statusOutputString[0] = "Intento " + Convert.ToString(currentRetry) + " - " + e.Message;
                     WriteStatusTextBox();
                 }
@@ -516,6 +580,7 @@ namespace WindowsFormsApplication1
 
         void connectionType_SelectedValueChanged(object sender, EventArgs e)
         {
+            ReadConfig();
             DisableFieldsFor();
         }
 

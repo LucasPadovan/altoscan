@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WindowsFormsApplication1
+namespace AltoScan
 {
     public static class RequestUtils
     {
@@ -98,6 +98,5 @@ namespace WindowsFormsApplication1
             }
             return result;
         }
-
     }
 }

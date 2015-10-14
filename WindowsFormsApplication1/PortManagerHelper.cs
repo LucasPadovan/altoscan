@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Ports;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using WindowsFormsApplication1;
+using AltoScan;
 
 namespace TransmisionDatos
 {
@@ -39,7 +39,7 @@ namespace TransmisionDatos
             //}
         }
 
-        public void generateFunction3Requests(List<byte[]> requests, int DispositiveId, int FirstParam, int SecondParam, int variablesLimit)
+        public void generateFunction3Requests(List<byte[]> requests, int DispositiveId, int FirstParam, int SecondParam, int variablesLimit, string connectionType)
         {
             //Calculamos cantidad request y el tamaño de la ultima request
             int variablesLeft = SecondParam % variablesLimit;
@@ -49,37 +49,52 @@ namespace TransmisionDatos
 
             for (int i = 0; i < numberOfRequests; i++)
             {
+                byte[] NewRequest;
                 //Armamos las request necesarias
                 int startingAddress = FirstParam + variablesLimit * i;
                 //Si es la ultima request, le seteamos como cantidad de registros el resto de la division 
                 if (i == extraRequests)
                 {
-                    requests.Add(RequestBuilder.BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLeft));
+                    if (connectionType == "TCP/IP")
+                        NewRequest = TcpRequestBuilder.GetInstance().BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLeft);
+                    else
+                        NewRequest = SerialPortRequestBuilder.GetInstance().BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLeft);
                 }
                 //Si no es la ultima request, armamos con el limite maximo como cantidad de registros
                 else
                 {
-                    requests.Add(RequestBuilder.BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLimit));
+                    if (connectionType == "TCP/IP")
+                        NewRequest = TcpRequestBuilder.GetInstance().BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLimit);
+                    else
+                        NewRequest = SerialPortRequestBuilder.GetInstance().BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLimit);
+
                 }
+                    requests.Add(NewRequest);
             };
         }
 
-        public void generateFunction6Requests(List<byte[]> requests, int DispositiveId, int FirstParam, string[] ThirdParam, int variablesLimit)
+        public void generateFunction6Requests(List<byte[]> requests, int DispositiveId, int FirstParam, string[] ThirdParam, int variablesLimit, string connectionType)
         {
             int value;
+            byte[] NewRequest;
 
             //Tercer parametro es un array de valores, la funcion 6 solo escribe un valor, por eso se toma el primero del array
             if (int.TryParse(ThirdParam[0], out value)) { }
-            else { value = 0; }
+            else                                        { value = 0; }
 
             //Creamos la request de funcion 6, direccion inicial y valor a escribir y la agregamos
-            requests.Add(RequestBuilder.BuildWriteRegisterRequest(DispositiveId, FirstParam, value));
+            if (connectionType == "TCP/IP")
+                NewRequest = TcpRequestBuilder.GetInstance().BuildWriteRegisterRequest(DispositiveId, FirstParam, value);
+            else
+                NewRequest = SerialPortRequestBuilder.GetInstance().BuildWriteRegisterRequest(DispositiveId, FirstParam, value);
+            requests.Add(NewRequest);
         }
 
-        public void generateFunction16Requests(List<byte[]> requests, int DispositiveId, int FirstParam, int SecondParam, string[] ThirdParam, int variablesLimit)
+        public void generateFunction16Requests(List<byte[]> requests, int DispositiveId, int FirstParam, int SecondParam, string[] ThirdParam, int variablesLimit, string connectionType)
         {
             int[] values;
             int counter = 0;
+            byte[] NewRequest;
 
             //Si la cantidad de variables es 0 o menos, la request no se arma bien
             if (SecondParam <= 0)
@@ -106,7 +121,12 @@ namespace TransmisionDatos
             }
 
             //Pone la request en el listado con la direccion inicial, cantidad de registros y los valores de las variables
-            requests.Add(RequestBuilder.BuildWriteMultipleRegistersRequest(DispositiveId, FirstParam, SecondParam, values));
+            if (connectionType == "TCP/IP")
+                NewRequest = TcpRequestBuilder.GetInstance().BuildWriteMultipleRegistersRequest(DispositiveId, FirstParam, SecondParam, values);
+            else
+                NewRequest = SerialPortRequestBuilder.GetInstance().BuildWriteMultipleRegistersRequest(DispositiveId, FirstParam, SecondParam, values);
+            
+            requests.Add(NewRequest);
         }
 
         public string generateRequestsString(List<byte[]> requests)
