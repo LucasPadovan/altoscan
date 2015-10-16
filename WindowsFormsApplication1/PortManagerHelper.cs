@@ -67,7 +67,6 @@ namespace TransmisionDatos
                         NewRequest = TcpRequestBuilder.GetInstance().BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLimit);
                     else
                         NewRequest = SerialPortRequestBuilder.GetInstance().BuildReadRegisterRequest(DispositiveId, startingAddress, variablesLimit);
-
                 }
                     requests.Add(NewRequest);
             };

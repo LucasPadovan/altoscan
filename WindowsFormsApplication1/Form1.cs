@@ -51,10 +51,11 @@ namespace AltoScan
 
             this.Invoke((MethodInvoker)delegate()
             {
-                this.hexaOutput.Text    += "\n" + parameter[0];
-                this.decimalOutput.Text += "\n" + parameter[1];
-                this.binOutput.Text     += "\n" + parameter[2];
+                this.hexaOutput.Text    += parameter[0] + "\n";
+                this.decimalOutput.Text += parameter[1] + "\n";
+                this.binOutput.Text     += parameter[2] + "\n";
                 this.errorTextBox.Text  += parameter[3];
+                //guardar aca el statusOutputString pasandole con un parameter[4] el indice donde tiene que guardar cada cosa.
             });
         }
 
@@ -62,12 +63,15 @@ namespace AltoScan
         {
             InitializeComponent();
             InitializeFields();
+            
             //Observador que recibe datos del puerto
             ComPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(port_DataReceived_1);
+            
             //Cuando cambie un valor en la interfaz genero los requests para no tener un bucle todo el tiempo
             BindEventsForInputs();
-            DisableFieldsFor();
-            
+
+            //Deshabilita los campos que no corresponden a la conexión elegida.
+            DisableFieldsForConnection();
         }
 
         //Inicializa todos los campos del formulario
@@ -142,7 +146,7 @@ namespace AltoScan
         }
 
         //Leer configuracion del form y armo los requests
-        private void ReadConfig() {
+        private void BuildRequests() {
             int DispositiveId;
             int FirstParam;
             int SecondParam;
@@ -150,6 +154,9 @@ namespace AltoScan
             string   textAreaString   = ReadTextArea();
             string[] ThirdParam       = textAreaString.Split(",".ToArray());
             string   FunctionSelected = ReadFunctionSelected();
+
+            numberOfRetries = int.Parse(numberOfRetriesInput.Text);
+            timeout         = int.Parse(timeoutInput.Text);
 
             //Usamos una funcion para convertir a int los valores del formulario evitando valores no deseados.
             DispositiveId = parseToInt(inputDispositiveId.Text);
@@ -211,7 +218,7 @@ namespace AltoScan
         }
 
         //Deshabilita los campos para tcp/ip o serial port
-        public void DisableFieldsFor()
+        public void DisableFieldsForConnection()
         {
             string selectedConnection = connectionType.Text;
             switch (selectedConnection)
@@ -241,19 +248,16 @@ namespace AltoScan
         //    Si no se puede comunicar que largue un error y termine
         private void startQuery_Click(object sender, EventArgs e)
         {
-            //Inicializo el port manager con la información que tengo en el formulario
-            ReadConfig();
+            //Armo las requests con la información presente en el formulario antes de abrir ninguna conexión.
+            BuildRequests();
 
-            if (connectionType.Text == "TCP/IP") {
+            if (connectionType.Text == "TCP/IP")
                 initializeTcpPortManager();
-                sendRequestsToTcp();
-            }
-            else {
-
-                initializePortManager();
-                //Como los requests se estan generando todo el tiempo, al hacer click se los envia al puerto y se espera la respuesta.
-                sendRequestsToSerial();
-            }
+            else
+                initializeSerialPortManager();
+            
+            //Envia los requests generados a la salida inicalizada.
+            sendRequests();
         }
 
         private void stopQuery_Click(object sender, EventArgs e)
@@ -279,7 +283,7 @@ namespace AltoScan
             }
         }
 
-        private void initializePortManager()
+        private void initializeSerialPortManager()
         {
             //String portName, int baudRate, Parity parity, int dataBits, StopBits stopBits
             string portName     = cboPorts.Text;
@@ -334,105 +338,67 @@ namespace AltoScan
 
         private void initializeTcpPortManager()
         {
-            int tcpPort    = parseToInt(tcpListeningPort.Text);
-            tcpPortManager = new TcpPortManager(tcpPort);
+            int tcpPort     = parseToInt(tcpListeningPort.Text);
+            tcpPortManager  = new TcpPortManager(tcpPort, this);
         }
 
-        private void sendRequestsToSerial()
+        private void sendRequests()
         {
+            int counter = 0;
             //Por cada intento
             for (int currentRetry = 1; currentRetry <= numberOfRetries; currentRetry++)
             {
+                //Inicializamos las variables del formulario como arrays de string de tamaño = cant de requests
+                hexaOutputString    = new string[requests.Count];
+                decimalOutputString = new string[requests.Count];
+                binaryOutputString  = new string[requests.Count];
+                statusOutputString  = new string[requests.Count];
+
                 try
                 {
-                    //Abrimos el puerto
-                    //portManager.ClosePort(); //cuando le damos a un dispositivo inexistente y volvemos a uno existente sigue
-                    portManager.OpenPort(timeout);
-                    //Inicializamos las variables del formulario como arrays de string de tamaño = cant de requests
-                    hexaOutputString = new string[requests.Count];
-                    decimalOutputString = new string[requests.Count];
-                    binaryOutputString = new string[requests.Count];
-                    statusOutputString = new string[requests.Count];
 
-                    int counter = 0;
+                    if (connectionType.Text != "TCP/IP")
+                    {
+                        //Abrimos el puerto
+                        //portManager.ClosePort(); //cuando le damos a un dispositivo inexistente y volvemos a uno existente sigue
+                        portManager.OpenPort(timeout);
+                    }
+
                     foreach (var request in requests)
                     {
                         //Tenemos que evitar hacer un request innecesario, si el primero falló, no seguimos para evitar quedar leyendo una respuesta que nunca llegará.
                         if (counter == 0 || (statusOutputString[counter - 1] != null && statusOutputString[counter - 1] != "Error en la trama."))
                         {
-                            //si el id de dispositivo o algo esta mal, al querer escribir se detona
-                            portManager.Write(request, 0, request.Length, timeout);
-                            //Aca leemos el buffer todo el tiempo, hasta que algo vuelve
-                            readPortBuffer(portManager, counter);
-                            //Cuando tiene las variables completas, escribe el formulario
-                            string header = "\nResponse " + Convert.ToString(counter) + " -- ";
-                            WriteOutput(
-                                header + hexaOutputString[counter],
-                                header + decimalOutputString[counter],
-                                header + binaryOutputString[counter]
-                            );
+                            //Cabecera para marcar las respuestas
+                            string header = "Response " + Convert.ToString(counter) + " -- ";
+                            
+                            if (connectionType.Text == "TCP/IP")
+                            {
+                                //si el id de dispositivo o algo esta mal, al querer escribir se detona
+                                tcpPortManager.Write(request);
+
+                                //Aca leemos el buffer todo el tiempo, hasta que algo vuelve
+                                tcpPortManager.ReadPort(header, timeout);
+                                statusOutputString[counter] = errorTextBox.Text;
+                            }
+                            else
+                            {
+                                portManager.Write(request, 0, request.Length, timeout, header); //si el id de dispositivo o algo esta mal, al querer escribir se detona
+                            }
+
                             counter++;
                         }
                     }
-                    WriteStatusTextBox();
+
                     currentRetry = numberOfRetries;
                     break;
                 }
                 catch (Exception e)
                 {
-                    portManager.ClosePort();
-                    statusOutputString = new string[1];
-                    statusOutputString[0] = "Intento " + Convert.ToString(currentRetry) + " - " + e.Message;
-                    WriteStatusTextBox();
-                }
-            }
-        }
+                    if (connectionType.Text != "TCP/IP")
+                        portManager.ClosePort();
 
-        private void sendRequestsToTcp()
-        {
-            //Por cada intento
-            for (int currentRetry = 1; currentRetry <= numberOfRetries; currentRetry++)
-            {
-                try
-                {
-                    //Abrimos el puerto
-                    //portManager.ClosePort(); //cuando le damos a un dispositivo inexistente y volvemos a uno existente sigue
-                    portManager.OpenPort(timeout);
-                    //Inicializamos las variables del formulario como arrays de string de tamaño = cant de requests
-                    hexaOutputString = new string[requests.Count];
-                    decimalOutputString = new string[requests.Count];
-                    binaryOutputString = new string[requests.Count];
-                    statusOutputString = new string[requests.Count];
-
-                    int counter = 0;
-                    foreach (var request in requests)
-                    {
-                        //Tenemos que evitar hacer un request innecesario, si el primero falló, no seguimos para evitar quedar leyendo una respuesta que nunca llegará.
-                        if (counter == 0 || (statusOutputString[counter - 1] != null && statusOutputString[counter - 1] != "Error en la trama."))
-                        {
-                            //si el id de dispositivo o algo esta mal, al querer escribir se detona
-                            portManager.Write(request, 0, request.Length, timeout);
-                            //Aca leemos el buffer todo el tiempo, hasta que algo vuelve
-                            readPortBuffer(portManager, counter);
-                            //Cuando tiene las variables completas, escribe el formulario
-                            string header = "\nResponse " + Convert.ToString(counter) + " -- ";
-                            WriteOutput(
-                                header + hexaOutputString[counter],
-                                header + decimalOutputString[counter],
-                                header + binaryOutputString[counter]
-                            );
-                            counter++;
-                        }
-                    }
-                    WriteStatusTextBox();
-                    currentRetry = numberOfRetries;
-                    break;
-                }
-                catch (Exception e)
-                {
-                    portManager.ClosePort();
-                    statusOutputString = new string[1];
-                    statusOutputString[0] = "Intento " + Convert.ToString(currentRetry) + " - " + e.Message;
+                    statusOutputString[counter] = "Intento " + Convert.ToString(currentRetry) + " - " + e.Message;
                     WriteStatusTextBox();
                 }
             }
@@ -515,17 +481,6 @@ namespace AltoScan
             }
             inputThirdParam.Enabled = value;
         }
-        public void WriteOutput(string hexaValue, string decimalValue, string binaryValue)
-        {
-            if (InvokeRequired)
-            {
-                this.Invoke(new Action<string, string, string>(WriteOutput), new object[] { hexaValue, decimalValue, binaryValue });
-                return;
-            }
-            decimalOutput.Text += decimalValue;
-            hexaOutput.Text    += hexaValue;
-            binOutput.Text     += binaryValue;
-        }
 
         //Parsers
         private int parseToInt(string text)
@@ -555,33 +510,33 @@ namespace AltoScan
 
         void inputThirdParam_TextChanged(object sender, EventArgs e)
         {
-            ReadConfig();
+            BuildRequests();
         }
 
         void inputSecondParam_TextChanged(object sender, EventArgs e)
         {
-            ReadConfig();
+            BuildRequests();
         }
 
         void inputFirstParam_TextChanged(object sender, EventArgs e)
         {
-            ReadConfig();
+            BuildRequests();
         }
 
         void inputFunction_SelectedValueChanged(object sender, EventArgs e)
         {
-            ReadConfig();
+            BuildRequests();
         }
 
         void inputDispositiveId_TextChanged(object sender, EventArgs e)
         {
-            ReadConfig();
+            BuildRequests();
         }
 
         void connectionType_SelectedValueChanged(object sender, EventArgs e)
         {
-            ReadConfig();
-            DisableFieldsFor();
+            BuildRequests();
+            DisableFieldsForConnection();
         }
 
     }

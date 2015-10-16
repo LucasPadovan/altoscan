@@ -24,10 +24,11 @@ namespace TransmisionDatos
         private StopBits stopBits;
         private delegate void SetTextDeleg(string text);
 
-        private string hexaString = "";
+        private string hexaString    = "";
         private string decimalString = "";
-        private string binaryString = "";
-        private string statusString = "";
+        private string binaryString  = "";
+        private string statusString  = "";
+        private string header        = "";
 
         private Form1 Form;
         public PortManager(String portName, int baudRate, Parity parity, int dataBits, StopBits stopBits, Form1 form )
@@ -71,8 +72,11 @@ namespace TransmisionDatos
         }
 
         //Verifica que el puerto este abierto (lo abre si esta cerrado) 
-        public void Write(byte[] request, int offset, int count, int timeout)
+        public void Write(byte[] request, int offset, int count, int timeout, string headerString)
         {
+            //coloco el header que será usado para las respuesta
+            header = headerString;
+            
             OpenPort(timeout);
           
             //request, 0, cantidad de bytes de la request
@@ -147,10 +151,10 @@ namespace TransmisionDatos
 
                 var response = new string[4];
 
-                response[0] = hexaString;
-                response[1] = decimalString;
-                response[2] = binaryString;
-                response[3] = statusString;
+                response[0] = header + hexaString;
+                response[1] = header + decimalString;
+                response[2] = header + binaryString;
+                response[3] = header + statusString;
 
                 Form.OnPortDataReceived(response);
 
@@ -168,10 +172,6 @@ namespace TransmisionDatos
                 //        break;
                 //}
 
-                //Console.WriteLine("Bytes to read: " + bytes);
-                //Console.WriteLine("Response in hexa: " + hexaString);
-                //Console.WriteLine("Response in decimal: " + decimalString);
-                //Console.WriteLine("Response in binary: " + binaryString);
             }
             else
             {
@@ -181,16 +181,14 @@ namespace TransmisionDatos
 
         private bool checkCRC(byte[] response)
         {
-            byte[] responseCRC = new byte[2];
-            responseCRC[0] = response[response.Length - 2];
-            responseCRC[1] = response[response.Length - 1];
+            byte[] responseCRC   = new byte[2];
+            responseCRC[0]       = response[response.Length - 2];
+            responseCRC[1]       = response[response.Length - 1];
 
             byte[] calculatedCRC = RequestUtils.GetCrc(response);
 
             if (responseCRC[0] == calculatedCRC[0] && responseCRC[1] == calculatedCRC[1])
-            {
                 return true;
-            }
             return false;
         }
     }
