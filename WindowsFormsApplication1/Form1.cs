@@ -55,7 +55,9 @@ namespace AltoScan
                 this.decimalOutput.Text += parameter[1] + "\n";
                 this.binOutput.Text     += parameter[2] + "\n";
                 this.errorTextBox.Text  += parameter[3];
-                //guardar aca el statusOutputString pasandole con un parameter[4] el indice donde tiene que guardar cada cosa.
+
+                int index = Convert.ToInt16(parameter[4]);
+                statusOutputString[index] = parameter[3];
             });
         }
 
@@ -367,27 +369,31 @@ namespace AltoScan
                     foreach (var request in requests)
                     {
                         //Tenemos que evitar hacer un request innecesario, si el primero falló, no seguimos para evitar quedar leyendo una respuesta que nunca llegará.
-                        if (counter == 0 || (statusOutputString[counter - 1] != null && statusOutputString[counter - 1] != "Error en la trama."))
+                        if (counter != 0 && connectionType.Text != "TCP/IP")
                         {
-                            //Cabecera para marcar las respuestas
-                            string header = "Response " + Convert.ToString(counter) + " -- ";
-                            
-                            if (connectionType.Text == "TCP/IP")
+                            while ((statusOutputString[counter - 1] != null && statusOutputString[counter - 1] != "Error en la trama."))
                             {
-                                //si el id de dispositivo o algo esta mal, al querer escribir se detona
-                                tcpPortManager.Write(request);
-
-                                //Aca leemos el buffer todo el tiempo, hasta que algo vuelve
-                                tcpPortManager.ReadPort(header, timeout);
-                                statusOutputString[counter] = errorTextBox.Text;
+                                Thread.Sleep(timeout/2);
                             }
-                            else
-                            {
-                                portManager.Write(request, 0, request.Length, timeout, header); //si el id de dispositivo o algo esta mal, al querer escribir se detona
-                            }
-
-                            counter++;
                         }
+                        //Cabecera para marcar las respuestas
+                        string header = "Response " + Convert.ToString(counter) + " -- ";
+
+                        if (connectionType.Text == "TCP/IP")
+                        {
+                            //si el id de dispositivo o algo esta mal, al querer escribir se detona
+                            tcpPortManager.Write(request, counter);
+
+                            //Aca leemos el buffer todo el tiempo, hasta que algo vuelve
+                            tcpPortManager.ReadPort(header, timeout);
+                            statusOutputString[counter] = errorTextBox.Text;
+                        }
+                        else
+                        {
+                            portManager.Write(request, 0, request.Length, timeout, header, counter); //si el id de dispositivo o algo esta mal, al querer escribir se detona
+                        }
+
+                        counter++;
                     }
 
                     currentRetry = numberOfRetries;

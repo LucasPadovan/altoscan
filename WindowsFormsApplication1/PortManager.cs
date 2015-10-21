@@ -30,6 +30,8 @@ namespace TransmisionDatos
         private string statusString  = "";
         private string header        = "";
 
+        private int index = 0;
+
         private Form1 Form;
         public PortManager(String portName, int baudRate, Parity parity, int dataBits, StopBits stopBits, Form1 form )
         {
@@ -65,6 +67,7 @@ namespace TransmisionDatos
             }
             port.WriteTimeout = timeout;
             port.ReadTimeout  = timeout;
+
         }
         public void ClosePort()
         {
@@ -72,8 +75,9 @@ namespace TransmisionDatos
         }
 
         //Verifica que el puerto este abierto (lo abre si esta cerrado) 
-        public void Write(byte[] request, int offset, int count, int timeout, string headerString)
+        public void Write(byte[] request, int offset, int count, int timeout, string headerString, int counter)
         {
+            index = counter;
             //coloco el header que será usado para las respuesta
             header = headerString;
             
@@ -149,12 +153,13 @@ namespace TransmisionDatos
                     statusString = "Error en la trama.";
 
 
-                var response = new string[4];
+                var response = new string[5];
 
                 response[0] = header + hexaString;
                 response[1] = header + decimalString;
                 response[2] = header + binaryString;
                 response[3] = header + statusString;
+                response[4] = Convert.ToString(index);
 
                 Form.OnPortDataReceived(response);
 

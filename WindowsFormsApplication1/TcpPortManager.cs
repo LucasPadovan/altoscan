@@ -14,6 +14,7 @@ namespace TransmisionDatos
         private TcpClient client;
         private Form1 Form;
         private int tcpPort;
+        private int index = 0;
 
         public TcpPortManager(int port, Form1 form)
         {
@@ -57,8 +58,10 @@ namespace TransmisionDatos
             client.Client.Close();
         }
 
-        public void Write(byte[] request)
+        public void Write(byte[] request, int counter)
         {
+            index = counter;
+
             connectClient();
 
             client.Client.Send(request);
@@ -121,12 +124,13 @@ namespace TransmisionDatos
 
                 //  disconnectClient();
 
-                var responses = new string[4];
+                var responses = new string[5];
 
                 responses[0] = hexaString;
                 responses[1] = decString;
                 responses[2] = binString;
                 responses[3] = statusString;
+                responses[4] = Convert.ToString(index);
 
                 Form.OnPortDataReceived(responses);
             }
